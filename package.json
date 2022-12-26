@@ -9,7 +9,8 @@
     "start": "cross-env NODE_ENV=production node ./server.js",
     "typecheck": "tsc -b",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "pnpx chromatic"
   },
   "dependencies": {
     "@remix-run/express": "1.10.0-pre.5",
@@ -36,6 +37,7 @@
     "@storybook/testing-library": "^0.0.13",
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.8",
+    "chromatic": "^6.14.0",
     "dotenv": "^16.0.3",
     "eslint": "^8.27.0",
     "eslint-plugin-storybook": "^0.6.8",
