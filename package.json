@@ -7,7 +7,9 @@
     "dev:node": "cross-env NODE_ENV=development nodemon --require dotenv/config ./server.js --watch ./server.js",
     "dev:remix": "remix watch",
     "start": "cross-env NODE_ENV=production node ./server.js",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@remix-run/express": "1.10.0-pre.5",
@@ -24,13 +26,25 @@
   "devDependencies": {
     "@remix-run/dev": "1.10.0-pre.5",
     "@remix-run/eslint-config": "1.10.0-pre.5",
+    "@storybook/addon-essentials": "^7.0.0-beta.15",
+    "@storybook/addon-interactions": "^7.0.0-beta.15",
+    "@storybook/addon-links": "^7.0.0-beta.15",
+    "@storybook/blocks": "^7.0.0-beta.15",
+    "@storybook/react": "^7.0.0-beta.15",
+    "@storybook/react-vite": "^7.0.0-beta.15",
+    "@storybook/react-webpack5": "^7.0.0-beta.15",
+    "@storybook/testing-library": "^0.0.13",
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.8",
     "dotenv": "^16.0.3",
     "eslint": "^8.27.0",
+    "eslint-plugin-storybook": "^0.6.8",
     "nodemon": "^2.0.20",
     "npm-run-all": "^4.1.5",
-    "typescript": "^4.8.4"
+    "prettier": "^2.8.1",
+    "storybook": "^7.0.0-beta.15",
+    "typescript": "^4.9.4",
+    "vite": "^4.0.3"
   },
   "engines": {
     "node": ">=14"
