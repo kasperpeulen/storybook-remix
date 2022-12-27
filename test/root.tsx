@@ -3,6 +3,7 @@ import IndexRoute from "~/routes";
 import JokesRoute from "~/routes/jokes";
 import JokesIndexRoute from "~/routes/jokes/index";
 import NewJokeRoute from "~/routes/jokes/new";
+import JokeRoute from "~/routes/jokes/$jokeId";
 
 interface TestRootProps {
   /**
@@ -10,6 +11,7 @@ interface TestRootProps {
    * * "/"
    * * "/jokes"
    * * "/jokes/new"
+   * * "/jokes/:jokeId"
    */
   path: string;
 }
@@ -34,6 +36,10 @@ export function TestRoot({ path }: TestRootProps) {
               {
                 path: "new",
                 element: <NewJokeRoute />,
+              },
+              {
+                path: ":jokeId",
+                element: <JokeRoute />,
               },
             ],
           },
