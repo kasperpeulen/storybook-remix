@@ -1,7 +1,19 @@
 {
-  "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "files": [
+    "remix.env.d.ts",
+    "vite.config.ts",
+    "vite.env.d.ts"
+  ],
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2019"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2019"
+    ],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
