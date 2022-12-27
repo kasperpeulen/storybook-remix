@@ -1,5 +1,7 @@
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import IndexRoute from "~/routes";
+import JokesRoute from "~/routes/jokes";
+import JokesIndexRoute from "~/routes/jokes/index";
 
 interface TestRootProps {
   /**
@@ -17,6 +19,16 @@ export function TestRoot({ path }: TestRootProps) {
           {
             path: "/",
             element: <IndexRoute />,
+          },
+          {
+            path: "jokes",
+            element: <JokesRoute />,
+            children: [
+              {
+                index: true,
+                element: <JokesIndexRoute />,
+              },
+            ],
           },
         ],
         {
