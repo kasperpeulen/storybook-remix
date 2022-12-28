@@ -1,11 +1,16 @@
-import type { Router, Location, LoaderFunctionArgs } from "@remix-run/router";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  Location,
+  Router,
+} from "@remix-run/router";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import IndexRoute from "~/routes";
 import JokesRoute, { loader as jokesLoader } from "~/routes/jokes";
 import JokesIndexRoute, {
   loader as jokesIndexLoader,
 } from "~/routes/jokes/index";
-import NewJokeRoute from "~/routes/jokes/new";
+import NewJokeRoute, { action as newJokeAction } from "~/routes/jokes/new";
 import JokeRoute, { loader as jokeLoader } from "~/routes/jokes/$jokeId";
 import { createTestContext } from "~/context/test-context";
 import type { Prisma } from "@prisma/client";
@@ -13,7 +18,7 @@ import { createPrismaMock } from "~/utils/prisma-mock";
 import dmmf from "../prisma/dmmf.json";
 import { getJokes } from "~/mocks/jokes";
 import { useEffect, useState } from "react";
-import type { LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 
 interface TestRootProps {
   /**
@@ -43,8 +48,10 @@ export function TestRoot({ url, jokes, onLocationChanged }: TestRootProps) {
         await new Promise((r) => setTimeout(r, 1));
         await context.db.joke.create({ data: joke });
       }
-      const withContext = (fn: LoaderFunction) => (args: LoaderFunctionArgs) =>
-        fn({ ...args, context });
+      const withContext =
+        (fn: LoaderFunction | ActionFunction) =>
+        (args: LoaderFunctionArgs | ActionFunctionArgs) =>
+          fn({ ...args, context });
 
       const router = createMemoryRouter(
         [
@@ -65,6 +72,7 @@ export function TestRoot({ url, jokes, onLocationChanged }: TestRootProps) {
               {
                 path: "new",
                 element: <NewJokeRoute />,
+                action: (args) => newJokeAction({ ...args, context }),
               },
               {
                 path: ":jokeId",
