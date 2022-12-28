@@ -3,6 +3,7 @@ const express = require("express");
 const compression = require("compression");
 const morgan = require("morgan");
 const { createRequestHandler } = require("@remix-run/express");
+const { PrismaClient } = require("@prisma/client");
 
 const BUILD_DIR = path.join(process.cwd(), "build");
 
@@ -25,22 +26,19 @@ app.use(express.static("public", { maxAge: "1h" }));
 
 app.use(morgan("tiny"));
 
-app.all(
-  "*",
-  process.env.NODE_ENV === "development"
-    ? (req, res, next) => {
-        purgeRequireCache();
+let context = createLiveContext();
 
-        return createRequestHandler({
-          build: require(BUILD_DIR),
-          mode: process.env.NODE_ENV,
-        })(req, res, next);
-      }
-    : createRequestHandler({
-        build: require(BUILD_DIR),
-        mode: process.env.NODE_ENV,
-      })
-);
+app.all("*", (req, res, next) => {
+  if (process.env.NODE_ENV === "development") {
+    purgeRequireCache();
+  }
+  return createRequestHandler({
+    getLoadContext: (req, res) => context,
+    build: require(BUILD_DIR),
+    mode: process.env.NODE_ENV,
+  })(req, res, next);
+});
+
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
@@ -58,4 +56,14 @@ function purgeRequireCache() {
       delete require.cache[key];
     }
   }
+}
+
+/**
+ * @returns {import('./app/context/context').Context}
+ */
+// Should really be imported from app/context/live-context
+function createLiveContext() {
+  return {
+    db: new PrismaClient(),
+  };
 }

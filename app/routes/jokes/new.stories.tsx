@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { TestRoot } from "../../../test/root";
+import { getJokes } from "~/mocks/jokes";
 
 const meta = {
   title: "NewJokeRoute",
   component: TestRoot,
-  tags: ["autodocs"],
   args: {
-    path: "/jokes/new",
+    url: "/jokes/new",
+    jokes: getJokes(),
   },
 } satisfies Meta<typeof TestRoot>;
 

@@ -1,6 +1,9 @@
 {
   "private": true,
   "sideEffects": false,
+  "prisma": {
+    "seed": "node --require esbuild-register prisma/seed.ts"
+  },
   "scripts": {
     "build": "remix build",
     "dev": "remix build && run-p \"dev:*\"",
@@ -10,12 +13,16 @@
     "typecheck": "tsc -b",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "chromatic": "pnpx chromatic"
+    "chromatic": "pnpx chromatic",
+    "generate-dmmf": "node --require esbuild-register prisma/dmmf.ts"
   },
   "dependencies": {
+    "@prisma/client": "^4.8.0",
     "@remix-run/express": "1.10.0-pre.5",
     "@remix-run/node": "1.10.0-pre.5",
     "@remix-run/react": "1.10.0-pre.5",
+    "@remix-run/router": "^1.2.1",
+    "@remix-run/server-runtime": "^1.9.0",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
     "express": "^4.18.2",
@@ -33,21 +40,25 @@
     "@storybook/blocks": "^7.0.0-beta.15",
     "@storybook/react": "^7.0.0-beta.15",
     "@storybook/react-vite": "^7.0.0-beta.15",
-    "@storybook/react-webpack5": "^7.0.0-beta.15",
     "@storybook/testing-library": "^0.0.13",
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.8",
+    "@types/uuid": "^9.0.0",
     "@vitejs/plugin-react": "^3.0.0",
     "chromatic": "^6.14.0",
     "dotenv": "^16.0.3",
+    "esbuild": "^0.16.12",
+    "esbuild-register": "^3.4.2",
     "eslint": "^8.27.0",
     "eslint-plugin-storybook": "^0.6.8",
     "nodemon": "^2.0.20",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.8.1",
+    "prisma": "^4.8.0",
     "react-router-dom": "6.6.1",
     "storybook": "^7.0.0-beta.15",
     "typescript": "^4.9.4",
+    "uuid": "^9.0.0",
     "vite": "^4.0.3"
   },
   "engines": {

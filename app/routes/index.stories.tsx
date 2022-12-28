@@ -4,9 +4,8 @@ import { TestRoot } from "../../test/root";
 const meta = {
   title: "IndexRoute",
   component: TestRoot,
-  tags: ["autodocs"],
   args: {
-    path: "/",
+    url: "/",
   },
 } satisfies Meta<typeof TestRoot>;
 
