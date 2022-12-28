@@ -5,6 +5,11 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: "NotoEmoji";
+  src: url("/fonts/Noto_Emoji/NotoColorEmoji-Regular.ttf") format("truetype");
+}
+
 :root {
   --hs-links: 48 100%;
   --color-foreground: hsl(0, 0%, 100%);
@@ -14,14 +19,14 @@
   --color-border: hsl(277, 85%, 38%);
   --color-invalid: hsl(356, 100%, 71%);
   --gradient-background: radial-gradient(
-          circle,
-          rgba(152, 11, 238, 1) 0%,
-          rgba(118, 15, 181, 1) 35%,
-          rgba(58, 13, 85, 1) 100%
+    circle,
+    rgba(152, 11, 238, 1) 0%,
+    rgba(118, 15, 181, 1) 35%,
+    rgba(58, 13, 85, 1) 100%
   );
   --font-body: -apple-system, "Segoe UI", Helvetica Neue, Helvetica, Roboto,
-  Arial, sans-serif, system-ui, "Apple Color Emoji", "Segoe UI Emoji",
-  "NotoEmoji";
+    Arial, sans-serif, system-ui, "NotoEmoji", "Apple Color Emoji",
+    "Segoe UI Emoji";
   --font-display: baloo, var(--font-body);
 }
 
@@ -167,7 +172,7 @@ h6 {
   outline-offset: 2px;
   transform: translateY(0);
   transition: background-color 50ms ease-out, box-shadow 50ms ease-out,
-  transform 100ms cubic-bezier(0.3, 0.6, 0.8, 1.25);
+    transform 100ms cubic-bezier(0.3, 0.6, 0.8, 1.25);
 }
 
 .button:hover {
@@ -255,7 +260,7 @@ textarea {
   line-height: 1.5;
   color: var(--color-foreground);
   transition: box-shadow 200ms, border-color 50ms ease-out,
-  background-color 50ms ease-out, color 50ms ease-out;
+    background-color 50ms ease-out, color 50ms ease-out;
 }
 
 [data-light] [type="text"],

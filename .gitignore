@@ -7,3 +7,5 @@ node_modules
 /prisma/dev.db
 
 .idea
+
+/storybook-static
