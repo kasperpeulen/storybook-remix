@@ -65,5 +65,6 @@ function purgeRequireCache() {
 function createLiveContext() {
   return {
     db: new PrismaClient(),
+    random: { getNumber: Math.random },
   };
 }
