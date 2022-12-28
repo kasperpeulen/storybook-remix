@@ -5,11 +5,6 @@
   font-style: normal;
 }
 
-@font-face {
-  font-family: "NotoEmoji";
-  src: url("/fonts/Noto_Emoji/NotoColorEmoji-Regular.ttf") format("truetype");
-}
-
 :root {
   --hs-links: 48 100%;
   --color-foreground: hsl(0, 0%, 100%);
@@ -25,7 +20,7 @@
     rgba(58, 13, 85, 1) 100%
   );
   --font-body: -apple-system, "Segoe UI", Helvetica Neue, Helvetica, Roboto,
-    Arial, sans-serif, system-ui, "NotoEmoji", "Apple Color Emoji",
+    Arial, sans-serif, system-ui, 'Noto Color Emoji', "Apple Color Emoji",
     "Segoe UI Emoji";
   --font-display: baloo, var(--font-body);
 }
