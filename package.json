@@ -36,6 +36,7 @@
   "devDependencies": {
     "@remix-run/dev": "1.10.0-pre.5",
     "@remix-run/eslint-config": "1.10.0-pre.5",
+    "@storybook/addon-a11y": "^7.0.0-beta.15",
     "@storybook/addon-essentials": "^7.0.0-beta.15",
     "@storybook/addon-interactions": "^7.0.0-beta.15",
     "@storybook/addon-links": "^7.0.0-beta.15",
