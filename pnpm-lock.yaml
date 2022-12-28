@@ -13,7 +13,7 @@ specifiers:
   '@storybook/addon-interactions': ^7.0.0-beta.15
   '@storybook/addon-links': ^7.0.0-beta.15
   '@storybook/blocks': ^7.0.0-beta.15
-  '@storybook/jest': ^0.0.10
+  '@storybook/jest': ^0.0.11-next.0
   '@storybook/react': ^7.0.0-beta.15
   '@storybook/react-vite': ^7.0.0-beta.15
   '@storybook/test-runner': ^0.9.2
@@ -68,7 +68,7 @@ devDependencies:
   '@storybook/addon-interactions': 7.0.0-beta.15_biqbaboplfbrettd7655fr4n2y
   '@storybook/addon-links': 7.0.0-beta.15_biqbaboplfbrettd7655fr4n2y
   '@storybook/blocks': 7.0.0-beta.15_biqbaboplfbrettd7655fr4n2y
-  '@storybook/jest': 0.0.10_biqbaboplfbrettd7655fr4n2y
+  '@storybook/jest': 0.0.11-next.0
   '@storybook/react': 7.0.0-beta.15_o4scbtliisanygemawej7x2d6i
   '@storybook/react-vite': 7.0.0-beta.15_ihovgb6mdu7ockk7dmct2h2wxa
   '@storybook/test-runner': 0.9.2_u7mmoyqfty2flmkfggora6dwra
@@ -3809,16 +3809,15 @@ packages:
       - supports-color
     dev: true
 
-  /@storybook/jest/0.0.10_biqbaboplfbrettd7655fr4n2y:
-    resolution: { integrity: sha512-qeYLIplpcOUQXboJde5pRCjTvkGmF80jEszRUoNYCNcEPfC2sMK68Wq6Ct8EQj3CoEdJqsK54O2YYh+7D9S+ag== }
+  /@storybook/jest/0.0.11-next.0:
+    resolution: { integrity: sha512-jtCu2rmDNhG+VxB/sR+AADhb6c/UNdqAmHYV3B50tc+HlnrlELE3UEsRFCztlq4zFaz1y3JK91lwQn9ja6yPsQ== }
     dependencies:
       '@storybook/expect': 27.5.2-0
-      '@storybook/instrumenter': 6.5.15_biqbaboplfbrettd7655fr4n2y
+      '@storybook/instrumenter': 7.0.0-beta.15
       '@testing-library/jest-dom': 5.16.5
       jest-mock: 27.5.1
     transitivePeerDependencies:
-      - react
-      - react-dom
+      - supports-color
     dev: true
 
   /@storybook/manager-api/7.0.0-beta.15_biqbaboplfbrettd7655fr4n2y:
@@ -5928,7 +5927,7 @@ packages:
       mississippi: 3.0.0
       mkdirp: 0.5.6
       move-concurrently: 1.0.1
-      promise-inflight: 1.0.1
+      promise-inflight: 1.0.1_bluebird@3.7.2
       rimraf: 2.6.3
       ssri: 6.0.2
       unique-filename: 1.1.1
@@ -5952,7 +5951,7 @@ packages:
       minipass-pipeline: 1.2.4
       mkdirp: 1.0.4
       p-map: 4.0.0
-      promise-inflight: 1.0.1
+      promise-inflight: 1.0.1_bluebird@3.7.2
       rimraf: 3.0.2
       ssri: 8.0.1
       tar: 6.1.13
@@ -12473,13 +12472,15 @@ packages:
       promise: 7.3.1
     dev: true
 
-  /promise-inflight/1.0.1:
-    resolution: {integrity: sha512-6zWPyEOFaQBJYcGMHBKTKJ3u6TBsnMFOIZSa6ce1e/ZrrsOlnHRHbabMjLiBYKp+n44X9eUI6VUPaukCXHuG4g==}
+  /promise-inflight/1.0.1_bluebird@3.7.2:
+    resolution: { integrity: sha512-6zWPyEOFaQBJYcGMHBKTKJ3u6TBsnMFOIZSa6ce1e/ZrrsOlnHRHbabMjLiBYKp+n44X9eUI6VUPaukCXHuG4g== }
     peerDependencies:
       bluebird: '*'
     peerDependenciesMeta:
       bluebird:
         optional: true
+    dependencies:
+      bluebird: 3.7.2
     dev: true
 
   /promise/7.3.1:
