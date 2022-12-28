@@ -40,5 +40,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+
       - name: Run Storybook tests
         run: pnpm run test-storybook:ci
