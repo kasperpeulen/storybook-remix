@@ -20,7 +20,8 @@
           rgba(58, 13, 85, 1) 100%
   );
   --font-body: -apple-system, "Segoe UI", Helvetica Neue, Helvetica, Roboto,
-  Arial, sans-serif, system-ui, "Apple Color Emoji", "Segoe UI Emoji";
+  Arial, sans-serif, system-ui, "Apple Color Emoji", "Segoe UI Emoji",
+  "NotoEmoji";
   --font-display: baloo, var(--font-body);
 }
 
