@@ -72,7 +72,7 @@ export function TestRoot({ url, jokes, onLocationChanged }: TestRootProps) {
               {
                 path: "new",
                 element: <NewJokeRoute />,
-                action: (args) => newJokeAction({ ...args, context }),
+                action: withContext(newJokeAction),
               },
               {
                 path: ":jokeId",
