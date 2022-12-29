@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Generate prisma
+        run: pnpx prisma generate
+
       - name: Install Playwright
         run: pnpx playwright install --with-deps
 
