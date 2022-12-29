@@ -14,6 +14,7 @@ import NewJokeRoute, { action as newJokeAction } from "~/routes/jokes/new";
 import JokeRoute, { loader as jokeLoader } from "~/routes/jokes/$jokeId";
 import { createTestContext } from "~/context/test-context";
 import type { Prisma } from "@prisma/client";
+import type { Event } from "~/utils/prisma-mock";
 import { createPrismaMock } from "~/utils/prisma-mock";
 import dmmf from "../prisma/dmmf.json";
 import { getJokes } from "~/mocks/jokes";
@@ -33,15 +34,26 @@ interface TestRootProps {
   jokes?: Prisma.JokeCreateInput[];
 
   onLocationChanged(location: Location): void;
+
+  onMutate(event: Event): void;
+  onQuery(event: Event): void;
 }
 
-export function TestRoot({ url, jokes, onLocationChanged }: TestRootProps) {
-  const datamodel = dmmf.datamodel as Prisma.DMMF.Datamodel;
+export function TestRoot({
+  url,
+  jokes,
+  onLocationChanged,
+  onQuery,
+  onMutate,
+}: TestRootProps) {
   const [router, setRouter] = useState<Router | undefined>();
 
   useEffect(() => {
     (async () => {
-      const context = createTestContext({ db: createPrismaMock(datamodel) });
+      const dataModel = dmmf.datamodel as Prisma.DMMF.Datamodel;
+      const context = createTestContext({
+        db: createPrismaMock(dataModel, { onMutate, onQuery }),
+      });
       // createPrismaMock also have a second (sync) data argument, but then ids won't be created
       // TODO fix that
       for (const joke of jokes ?? getJokes()) {
@@ -86,12 +98,13 @@ export function TestRoot({ url, jokes, onLocationChanged }: TestRootProps) {
           initialEntries: [url],
         }
       );
-      router.subscribe(({ location }) => {
-        onLocationChanged(location);
-      });
+
       setRouter(router);
+      return router.subscribe(({ location, navigation }) => {
+        if (navigation.state === "idle") onLocationChanged(location);
+      });
     })();
-  }, [jokes, url, onLocationChanged]);
+  }, [jokes, url, onLocationChanged, onQuery, onMutate]);
 
   if (router == null) return null;
 

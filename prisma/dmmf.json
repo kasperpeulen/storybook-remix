@@ -110,10 +110,7 @@
     ],
     "otherOperations": {
       "read": [],
-      "write": [
-        "executeRaw",
-        "queryRaw"
-      ]
+      "write": ["executeRaw", "queryRaw"]
     }
   }
 }

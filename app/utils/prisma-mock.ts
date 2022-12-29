@@ -22,10 +22,21 @@ export type PrismaMockData<P> = Partial<{
   [key in IsTable<Uncapitalize<IsString<keyof P>>>]: PrismaList<P, key>;
 }>;
 
+export interface Event {
+  table: string;
+  method: string;
+  params: any[];
+}
+
 export const createPrismaMock = <P>(
   datamodel: Prisma.DMMF.Datamodel,
-  data: PrismaMockData<P> = {}
+  options?: {
+    data?: PrismaMockData<P>;
+    onQuery?: (data: { table: string; method: string; params: any[] }) => void;
+    onMutate?: (data: { table: string; method: string; params: any[] }) => void;
+  }
 ): P => {
+  let data = options?.data ?? ({} as PrismaMockData<P>);
   const client = {};
 
   let autoincrement: { [key: string]: number } = {};
@@ -800,6 +811,16 @@ export const createPrismaMock = <P>(
     const objs = Delegate(c, model);
     Object.keys(objs).forEach((fncName) => {
       client[c][fncName] = async (...params) => {
+        const event =
+          fncName.includes("find") || fncName === "count"
+            ? "onQuery"
+            : ("onMutate" as const);
+
+        options?.[event]?.({
+          table: c,
+          method: fncName,
+          ...(typeof params[0] === "object" ? params[0] : {}),
+        });
         return objs[fncName](...params);
       };
     });

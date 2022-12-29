@@ -1,19 +1,13 @@
 {
   "include": [
     "**/*.ts",
-    "**/*.tsx"
-  ],
-  "files": [
+    "**/*.tsx",
     "remix.env.d.ts",
     "vite.config.ts",
     "vite-env.d.ts"
   ],
   "compilerOptions": {
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2019"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ES2019"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
@@ -27,7 +21,8 @@
     "paths": {
       "~/*": ["./app/*"]
     },
-
+    "types": ["node", "testing-library__jest-dom"],
+    "skipLibCheck": true,
     // Remix takes care of building everything in `remix build`.
     "noEmit": true
   }

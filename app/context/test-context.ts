@@ -9,7 +9,7 @@ export function createTestContext({ db }: Partial<Context> = {}): Context &
   Record<string, unknown> {
   const datamodel = json.datamodel as Prisma.DMMF.Datamodel;
   return {
-    db: db ?? createPrismaMock(datamodel, { joke: getJokes() }),
+    db: db ?? createPrismaMock(datamodel, { data: { joke: getJokes() } }),
     random: new TestRandom(),
   };
 }

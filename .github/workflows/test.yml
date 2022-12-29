@@ -43,5 +43,14 @@ jobs:
       - name: Install Playwright
         run: pnpx playwright install --with-deps
 
+      - name: Prettier
+        run: pnpm run prettier:check
+
+      - name: ESLint
+        run: pnpm run eslint
+
+      - name: Type check
+        run: pnpm run typecheck
+
       - name: Run Storybook tests
         run: pnpm run test-storybook:ci

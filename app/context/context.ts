@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import { Random } from "~/context/random";
+import type { Random } from "~/context/random";
 
 export interface Context {
   db: PrismaClient;
