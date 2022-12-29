@@ -1,9 +1,9 @@
-const path = require("path");
-const express = require("express");
-const compression = require("compression");
-const morgan = require("morgan");
-const { createRequestHandler } = require("@remix-run/express");
-const { PrismaClient } = require("@prisma/client");
+import path from "path";
+import express from "express";
+import compression from "compression";
+import morgan from "morgan";
+import { createRequestHandler } from "@remix-run/express";
+import { createLiveContext } from "./app/context/live-context";
 
 const BUILD_DIR = path.join(process.cwd(), "build");
 
@@ -26,7 +26,7 @@ app.use(express.static("public", { maxAge: "1h" }));
 
 app.use(morgan("tiny"));
 
-let context = createLiveContext();
+const context = createLiveContext();
 
 app.all("*", (req, res, next) => {
   if (process.env.NODE_ENV === "development") {
@@ -56,15 +56,4 @@ function purgeRequireCache() {
       delete require.cache[key];
     }
   }
-}
-
-/**
- * @returns {import('./app/context/context').Context}
- */
-// Should really be imported from app/context/live-context
-function createLiveContext() {
-  return {
-    db: new PrismaClient(),
-    random: { getNumber: Math.random },
-  };
 }
