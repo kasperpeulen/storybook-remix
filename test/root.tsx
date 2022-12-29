@@ -35,8 +35,8 @@ interface TestRootProps {
 
   onLocationChanged(location: Location): void;
 
-  onMutate(event: Event): void;
   onQuery(event: Event): void;
+  onMutate(event: Event): void;
 }
 
 export function TestRoot({

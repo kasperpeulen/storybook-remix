@@ -20,7 +20,7 @@
     "chromatic": "pnpx chromatic",
     "generate-dmmf": "node --require esbuild-register prisma/dmmf.ts",
     "test-storybook": "test-storybook",
-    "test-storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"yarn build-storybook --quiet && npx http-server storybook-static --port 6006\" \"wait-on http://127.0.0.1:6006 && yarn test-storybook --url http://127.0.0.1:6006\""
+    "test-storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"yarn build-storybook --quiet && npx http-server storybook-static --port 6006 --silent\" \"wait-on http://127.0.0.1:6006 && yarn test-storybook --url http://127.0.0.1:6006\""
   },
   "dependencies": {
     "@prisma/client": "^4.8.0",

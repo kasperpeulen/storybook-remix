@@ -59,23 +59,31 @@ export const TooShortContent: Story = {
 };
 
 export const Valid: Story = {
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
 
     // TODO can be removed when we fix the creation of testdata to be sync
     await waitFor(() => expect(canvas.getByRole("button")).toBeInTheDocument());
 
-    const name = await canvas.getByLabelText("Name:");
-    await userEvent.type(name, "Frisbee", { delay: 10 });
+    const name = "Frisbee";
+    const content =
+      "I was wondering why the frisbee was getting bigger, then it hit me.";
 
-    const content = await canvas.getByLabelText("Content:");
-    await userEvent.type(
-      content,
-      "I was wondering why the frisbee was getting bigger, then it hit me.",
-      { delay: 10 }
-    );
+    const nameInput = await canvas.getByLabelText("Name:");
+    await userEvent.type(nameInput, name, { delay: 10 });
+
+    const contentInput = await canvas.getByLabelText("Content:");
+    await userEvent.type(contentInput, content, { delay: 10 });
 
     const submitButton = canvas.getByRole("button");
     await userEvent.click(submitButton);
+
+    await expect(args.onMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        table: "joke",
+        method: "create",
+        data: { content, name },
+      })
+    );
   },
 };

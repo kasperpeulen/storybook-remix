@@ -816,12 +816,14 @@ export const createPrismaMock = <P>(
             ? "onQuery"
             : ("onMutate" as const);
 
+        const response = await objs[fncName](...params);
         options?.[event]?.({
           table: c,
           method: fncName,
           ...(typeof params[0] === "object" ? params[0] : {}),
+          db: { ...data },
         });
-        return objs[fncName](...params);
+        return response;
       };
     });
   });
