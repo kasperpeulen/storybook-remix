@@ -9,3 +9,4 @@ node_modules
 /storybook-static
 
 app/utils/prisma-mock.ts
+pnpm-lock.yaml
