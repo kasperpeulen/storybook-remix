@@ -1,4 +1,7 @@
-export function getJokes() {
+import type { Prisma } from "@prisma/client";
+
+export function getJokes(): Prisma.JokeUncheckedCreateInput[] {
+  // shout-out to https://icanhazdadjoke.com/
   return [
     {
       name: "Road worker",
@@ -28,5 +31,5 @@ export function getJokes() {
       name: "Elevator",
       content: `My first time using an elevator was an uplifting experience. The second time let me down.`,
     },
-  ];
+  ].map((joke) => ({ ...joke, jokesterId: "1" }));
 }

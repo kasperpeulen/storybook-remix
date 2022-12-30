@@ -2,7 +2,8 @@ import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/server-runtime";
 import { Link, useLoaderData } from "@remix-run/react";
 
-export const loader = (async ({ params, context: { db } }) => {
+export const loader = (async ({ params, context: ctx }) => {
+  const { db } = ctx;
   const joke = await db.joke.findUnique({
     where: { id: params.jokeId },
   });

@@ -6,6 +6,7 @@ const meta = {
   component: TestRoot,
   args: {
     url: "/",
+    loggedInUser: "none",
   },
 } satisfies Meta<typeof TestRoot>;
 

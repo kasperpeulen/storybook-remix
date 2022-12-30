@@ -17,9 +17,17 @@ import type { Prisma } from "@prisma/client";
 import type { Event } from "~/utils/prisma-mock";
 import { createPrismaMock } from "~/utils/prisma-mock";
 import dmmf from "../prisma/dmmf.json";
-import { getJokes } from "~/mocks/jokes";
-import { useEffect, useState } from "react";
-import type { LoaderFunction, ActionFunction } from "@remix-run/node";
+import { useEffect, useRef, useState } from "react";
+import type {
+  ActionFunction,
+  LoaderFunction,
+  SessionData,
+} from "@remix-run/node";
+import Login, { action as loginAction } from "~/routes/login";
+import { action as logoutAction } from "~/routes/logout";
+import { createSeedData } from "~/mocks/seed";
+import { cookieKey } from "~/utils/session";
+import { createTestLayer } from "~/context/test-layer";
 
 interface TestRootProps {
   /**
@@ -28,42 +36,80 @@ interface TestRootProps {
    * * "/jokes"
    * * "/jokes/new"
    * * "/jokes/:jokeId"
+   * * "/login"
    */
   url: string;
-
-  jokes?: Prisma.JokeCreateInput[];
+  loggedInUser: "none" | "kody" | "mr.bean";
+  jokes?: Prisma.JokeUncheckedCreateInput[];
+  users?: Prisma.UserUncheckedCreateInput[];
 
   onLocationChanged(location: Location): void;
 
   onQuery(event: Event): void;
+
   onMutate(event: Event): void;
+
+  onCookieSet(data: SessionData & { cookie: string }): void;
 }
 
 export function TestRoot({
   url,
+  loggedInUser,
   jokes,
+  users,
   onLocationChanged,
   onQuery,
   onMutate,
+  onCookieSet,
 }: TestRootProps) {
   const [router, setRouter] = useState<Router | undefined>();
+  const cookie = useRef<string | undefined>();
 
   useEffect(() => {
     (async () => {
       const dataModel = dmmf.datamodel as Prisma.DMMF.Datamodel;
-      const context = createTestContext({
-        db: createPrismaMock(dataModel, { onMutate, onQuery }),
+      const ctx = createTestContext({
+        db: createPrismaMock(dataModel, {
+          onMutate,
+          onQuery,
+          data: createSeedData({ jokes, users }),
+          ...createTestLayer(),
+        }),
       });
-      // createPrismaMock also have a second (sync) data argument, but then ids won't be created
-      // TODO fix that
-      for (const joke of jokes ?? getJokes()) {
-        await new Promise((r) => setTimeout(r, 1));
-        await context.db.joke.create({ data: joke });
+
+      if (loggedInUser !== "none") {
+        const user = await ctx.db.user.findUnique({
+          where: { username: loggedInUser },
+        });
+        if (user) {
+          const session = await ctx.sessionStorage.getSession();
+          session.set("userId", user.id);
+          cookie.current = await ctx.sessionStorage.commitSession(session);
+          onCookieSet({ cookie: cookie.current, ...session.data });
+        }
       }
-      const withContext =
+
+      const withMiddleware =
         (fn: LoaderFunction | ActionFunction) =>
-        (args: LoaderFunctionArgs | ActionFunctionArgs) =>
-          fn({ ...args, context });
+        async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
+          if (cookie.current) {
+            args.request.headers.set(`${cookieKey}`, cookie.current);
+          }
+          let response = await fn({ ...args, context: ctx });
+          if (response instanceof Response) {
+            const newCookie = response.headers.get(`Set-${cookieKey}`);
+            if (newCookie != null) {
+              cookie.current = newCookie;
+              const session = await ctx.sessionStorage.getSession(newCookie);
+              onCookieSet({ cookie: newCookie, ...session.data });
+              console.log("onCookieSet", {
+                cookie: newCookie,
+                ...session.data,
+              });
+            }
+          }
+          return response;
+        };
 
       const router = createMemoryRouter(
         [
@@ -73,25 +119,34 @@ export function TestRoot({
           },
           {
             path: "jokes",
-            loader: withContext(jokesLoader),
+            loader: withMiddleware(jokesLoader),
             element: <JokesRoute />,
             children: [
               {
                 index: true,
-                loader: withContext(jokesIndexLoader),
+                loader: withMiddleware(jokesIndexLoader),
                 element: <JokesIndexRoute />,
               },
               {
                 path: "new",
                 element: <NewJokeRoute />,
-                action: withContext(newJokeAction),
+                action: withMiddleware(newJokeAction),
               },
               {
                 path: ":jokeId",
-                loader: withContext(jokeLoader),
+                loader: withMiddleware(jokeLoader),
                 element: <JokeRoute />,
               },
             ],
+          },
+          {
+            path: "login",
+            element: <Login />,
+            action: withMiddleware(loginAction),
+          },
+          {
+            path: "logout",
+            action: withMiddleware(logoutAction),
           },
         ],
         {
@@ -100,11 +155,20 @@ export function TestRoot({
       );
 
       setRouter(router);
-      return router.subscribe(({ location, navigation }) => {
+      router.subscribe(({ location, navigation }) => {
         if (navigation.state === "idle") onLocationChanged(location);
       });
     })();
-  }, [jokes, url, onLocationChanged, onQuery, onMutate]);
+  }, [
+    jokes,
+    url,
+    onLocationChanged,
+    onQuery,
+    onMutate,
+    loggedInUser,
+    onCookieSet,
+    users,
+  ]);
 
   if (router == null) return null;
 
