@@ -6,16 +6,20 @@ export interface Clock {
 
 export class LiveClock {
   now = () => new Date();
-  sleep = (ms: number) => {
-    const promise: Promise<void> & { cancel?: () => void } = new Promise(
-      (resolve) => {
-        const timer = setTimeout(resolve, ms);
-        promise.cancel = () => clearTimeout(timer);
-      }
-    );
-    return promise;
-  };
+  sleep = sleep;
 }
+
+export const sleep = (ms: number) => {
+  let cancel;
+  const promise: Promise<void> & { cancel?: () => void } = new Promise(
+    (resolve) => {
+      const timer = setTimeout(resolve, ms);
+      cancel = () => clearTimeout(timer);
+    }
+  );
+  promise.cancel = cancel;
+  return promise;
+};
 
 export class TestClock {
   constructor(private date: Date) {}

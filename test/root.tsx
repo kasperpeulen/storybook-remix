@@ -28,6 +28,7 @@ import { action as logoutAction } from "~/routes/logout";
 import { createSeedData } from "~/mocks/seed";
 import { cookieKey } from "~/utils/session";
 import { createTestLayer } from "~/context/test-layer";
+import { sleep } from "~/context/clock";
 
 interface TestRootProps {
   /**
@@ -40,6 +41,7 @@ interface TestRootProps {
    */
   url: string;
   loggedInUser: "none" | "kody" | "mr.bean";
+  connection?: "super fast" | "fast" | "slow" | "super slow";
   jokes?: Prisma.JokeUncheckedCreateInput[];
   users?: Prisma.UserUncheckedCreateInput[];
 
@@ -61,6 +63,7 @@ export function TestRoot({
   onQuery,
   onMutate,
   onCookieSet,
+  connection,
 }: TestRootProps) {
   const [router, setRouter] = useState<Router | undefined>();
   const cookie = useRef<string | undefined>();
@@ -108,6 +111,15 @@ export function TestRoot({
               });
             }
           }
+          await sleep(
+            connection === "fast"
+              ? 100
+              : connection === "slow"
+              ? 500
+              : connection === "super slow"
+              ? 1000
+              : 0
+          );
           return response;
         };
 
@@ -168,6 +180,7 @@ export function TestRoot({
     loggedInUser,
     onCookieSet,
     users,
+    connection,
   ]);
 
   if (router == null) return null;
