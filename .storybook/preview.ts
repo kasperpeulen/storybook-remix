@@ -1,4 +1,4 @@
-import { Parameters } from "@storybook/react";
+import { Args, Parameters } from "@storybook/react";
 
 export const parameters: Parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
@@ -8,4 +8,8 @@ export const parameters: Parameters = {
       date: /Date$/,
     },
   },
+};
+
+export const args: Args = {
+  connection: "super fast",
 };

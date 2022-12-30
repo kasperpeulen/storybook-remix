@@ -16,5 +16,8 @@ export default {
   docs: {
     autodocs: "tag",
   },
+  features: {
+    interactionsDebugger: true,
+  },
   staticDirs: [path.resolve("public"), path.resolve("app/styles")],
 } satisfies StorybookConfig;

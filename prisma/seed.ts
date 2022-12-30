@@ -1,13 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { getJokes } from "~/mocks/jokes";
+import { seed } from "~/mocks/seed";
 
-const db = new PrismaClient();
+const prismaClient = new PrismaClient();
 
-async function seed() {
-  for (const joke of getJokes()) {
-    await new Promise((r) => setTimeout(r, 1));
-    await db.joke.create({ data: joke });
-  }
-}
-
-seed();
+seed(prismaClient);

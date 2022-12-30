@@ -4,7 +4,8 @@
  * pages!
  */
 
-body:has(.index) {
+body:has(.index),
+.docs-story:has(.index) {
   background-image: var(--gradient-background);
 }
 

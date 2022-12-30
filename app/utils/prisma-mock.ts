@@ -1,6 +1,7 @@
 // @ts-nocheck
 import type { Prisma } from "@prisma/client";
-import { v4 } from "uuid";
+import { Clock, LiveClock } from "~/context/clock";
+import { IdGenerator, UuidV4Generator } from "~/utils/id-generator";
 
 type UnwrapPromise<P extends any> = P extends Promise<infer R> ? R : P;
 
@@ -34,10 +35,15 @@ export const createPrismaMock = <P>(
     data?: PrismaMockData<P>;
     onQuery?: (data: { table: string; method: string; params: any[] }) => void;
     onMutate?: (data: { table: string; method: string; params: any[] }) => void;
+    clock?: Clock;
+    idGenerator?: IdGenerator;
   }
 ): P => {
-  let data = options?.data ?? ({} as PrismaMockData<P>);
+  const initialData = options?.data ?? ({} as PrismaMockData<P>);
+  let data = {};
   const client = {};
+  const clock = options?.clock ?? new LiveClock();
+  const idGenerator = options?.idGenerator ?? new UuidV4Generator();
 
   let autoincrement: { [key: string]: number } = {};
 
@@ -339,16 +345,18 @@ export const createPrismaMock = <P>(
           (isCreating || d[field.name] === null) &&
           (d[field.name] === null || d[field.name] === undefined)
         ) {
+          if (field.isUpdatedAt) {
+            d = {
+              ...d,
+              [field.name]: clock.now(),
+            };
+          }
           if (field.hasDefaultValue) {
             if (
               typeof field.default === "object" &&
               !Array.isArray(field.default)
             ) {
-              // handling uuid as an string, for more deterministic testing
-              if (
-                field.default.name === "autoincrement" ||
-                field.default.name === "uuid"
-              ) {
+              if (field.default.name === "autoincrement") {
                 const key = `${prop}_${field.name}`;
                 let m = autoincrement?.[key];
                 if (m === undefined) {
@@ -371,12 +379,12 @@ export const createPrismaMock = <P>(
                 // redundant, revisit
                 d = {
                   ...d,
-                  [field.name]: v4(),
+                  [field.name]: idGenerator.next(),
                 };
               } else if (field.default.name === "now") {
                 d = {
                   ...d,
-                  [field.name]: new Date().toISOString(),
+                  [field.name]: clock.now(),
                 };
               } else {
                 d = {
@@ -799,6 +807,8 @@ export const createPrismaMock = <P>(
   datamodel.models.forEach((model) => {
     if (!model) return;
     const c = getCamelCase(model.name);
+    const objs = Delegate(c, model);
+
     client[c] = {};
     if (!data[c]) {
       data = {
@@ -806,9 +816,13 @@ export const createPrismaMock = <P>(
         [c]: [],
       };
     }
+
+    if (initialData[c]) {
+      objs.createMany({ data: initialData[c] });
+    }
+
     data = removeMultiFieldIds(model, data);
 
-    const objs = Delegate(c, model);
     Object.keys(objs).forEach((fncName) => {
       client[c][fncName] = async (...params) => {
         const event =
@@ -822,6 +836,7 @@ export const createPrismaMock = <P>(
           method: fncName,
           ...(typeof params[0] === "object" ? params[0] : {}),
           db: { ...data },
+          date: new Date().getTime(),
         });
         return response;
       };
