@@ -1,7 +1,9 @@
 // @ts-nocheck
 import type { Prisma } from "@prisma/client";
-import { Clock, LiveClock } from "~/context/clock";
-import { IdGenerator, UuidV4Generator } from "~/utils/id-generator";
+import type { Clock } from "~/test/context/clock";
+import { LiveClock } from "~/test/context/clock";
+import type { IdGenerator } from "~/test/utils/id-generator";
+import { UuidV4Generator } from "~/test/utils/id-generator";
 
 type UnwrapPromise<P extends any> = P extends Promise<infer R> ? R : P;
 
@@ -12,10 +14,7 @@ type PrismaDelegate = {
 type IsTable<S> = S extends `\$${infer fnc}` ? never : S;
 type IsString<S extends any> = S extends string ? S : never;
 
-export type PrismaList<
-  P extends { [key: string]: any },
-  K extends string
-> = P[K] extends PrismaDelegate
+export type PrismaList<P extends { [key: string]: any }, K extends string> = P[K] extends PrismaDelegate
   ? Array<Partial<UnwrapPromise<ReturnType<P[K]["findUnique"]>>>>
   : never;
 
@@ -51,20 +50,14 @@ export const createPrismaMock = <P>(
     return name.substr(0, 1).toLowerCase() + name.substr(1);
   };
 
-  const shallowCompare = (
-    a: { [key: string]: any },
-    b: { [key: string]: any }
-  ) => {
+  const shallowCompare = (a: { [key: string]: any }, b: { [key: string]: any }) => {
     for (let key in b) {
       if (a[key] !== b[key]) return false;
     }
     return true;
   };
 
-  const removeMultiFieldIds = (
-    model: Prisma.DMMF.Model,
-    data: PrismaMockData<P>
-  ) => {
+  const removeMultiFieldIds = (model: Prisma.DMMF.Model, data: PrismaMockData<P>) => {
     const c = getCamelCase(model.name);
     const idFields = model.idFields || model.primaryKey?.fields;
 
@@ -167,11 +160,9 @@ export const createPrismaMock = <P>(
               const keyToGet = field.relationToFields[0];
               if (keyToMatch !== keyToGet) {
                 const valueToMatch = connect[keyToMatch];
-                const matchingRow = data[getCamelCase(field.type)].find(
-                  (row) => {
-                    return row[keyToMatch] === valueToMatch;
-                  }
-                );
+                const matchingRow = data[getCamelCase(field.type)].find((row) => {
+                  return row[keyToMatch] === valueToMatch;
+                });
                 if (!matchingRow) {
                   throw new PrismaClientKnownRequestError(
                     "An operation failed because it depends on one or more records that were required but not found. {cause}",
@@ -201,26 +192,22 @@ export const createPrismaMock = <P>(
                 });
                 d = {
                   ...rest,
-                  [field.relationFromFields[0]]:
-                    item[field.relationToFields[0]],
+                  [field.relationFromFields[0]]: item[field.relationToFields[0]],
                 };
               } else {
                 const map = (val) => ({
                   ...val,
                   [joinfield.name]: {
-                    connect: joinfield.relationToFields.reduce(
-                      (prev, cur, index) => {
-                        let val = d[cur];
-                        if (!isCreating && !val) {
-                          val = findOne(args)[cur];
-                        }
-                        return {
-                          ...prev,
-                          [cur]: val,
-                        };
-                      },
-                      {}
-                    ),
+                    connect: joinfield.relationToFields.reduce((prev, cur, index) => {
+                      let val = d[cur];
+                      if (!isCreating && !val) {
+                        val = findOne(args)[cur];
+                      }
+                      return {
+                        ...prev,
+                        [cur]: val,
+                      };
+                    }, {}),
                   },
                 });
                 if (c.createMany) {
@@ -299,8 +286,7 @@ export const createPrismaMock = <P>(
                     [joinfield.relationFromFields[0]]: null,
                   },
                   where: {
-                    [joinfield.relationFromFields[0]]:
-                      item[joinfield.relationToFields[0]],
+                    [joinfield.relationFromFields[0]]: item[joinfield.relationToFields[0]],
                   },
                 });
               }
@@ -341,10 +327,7 @@ export const createPrismaMock = <P>(
           }
         }
 
-        if (
-          (isCreating || d[field.name] === null) &&
-          (d[field.name] === null || d[field.name] === undefined)
-        ) {
+        if ((isCreating || d[field.name] === null) && (d[field.name] === null || d[field.name] === undefined)) {
           if (field.isUpdatedAt) {
             d = {
               ...d,
@@ -352,10 +335,7 @@ export const createPrismaMock = <P>(
             };
           }
           if (field.hasDefaultValue) {
-            if (
-              typeof field.default === "object" &&
-              !Array.isArray(field.default)
-            ) {
+            if (typeof field.default === "object" && !Array.isArray(field.default)) {
               if (field.default.name === "autoincrement") {
                 const key = `${prop}_${field.name}`;
                 let m = autoincrement?.[key];
@@ -368,8 +348,7 @@ export const createPrismaMock = <P>(
                 m += 1;
                 d = {
                   ...d,
-                  [field.name]:
-                    field.default.name === "uuid" ? m.toString() : m,
+                  [field.name]: field.default.name === "uuid" ? m.toString() : m,
                 };
                 autoincrement = {
                   ...autoincrement,
@@ -456,9 +435,7 @@ export const createPrismaMock = <P>(
             );
             if (filter.every) {
               if (res.length === 0) return false;
-              const all = data[childName].filter(
-                matchFnc(getFieldRelationshipWhere(item, info))
-              );
+              const all = data[childName].filter(matchFnc(getFieldRelationshipWhere(item, info)));
               return res.length === all.length;
             } else if (filter.some) {
               return res.length > 0;
@@ -492,9 +469,7 @@ export const createPrismaMock = <P>(
             match = val.indexOf(filter.startsWith) === 0;
           }
           if ("endsWith" in filter && match) {
-            match =
-              val.indexOf(filter.endsWith) ===
-              val.length - filter.endsWith.length;
+            match = val.indexOf(filter.endsWith) === val.length - filter.endsWith.length;
           }
           if ("contains" in filter && match) {
             match = val.indexOf(filter.contains) > -1;
@@ -663,8 +638,7 @@ export const createPrismaMock = <P>(
           if (joinfield.relationOnDelete === "SetNull") {
             delegate.update({
               where: {
-                [joinfield.relationFromFields[0]]:
-                  item[joinfield.relationToFields[0]],
+                [joinfield.relationFromFields[0]]: item[joinfield.relationToFields[0]],
               },
               data: {
                 [joinfield.relationFromFields[0]]: null,
@@ -673,8 +647,7 @@ export const createPrismaMock = <P>(
           } else if (joinfield.relationOnDelete === "Cascade") {
             delegate.delete({
               where: {
-                [joinfield.relationFromFields[0]]:
-                  item[joinfield.relationToFields[0]],
+                [joinfield.relationFromFields[0]]: item[joinfield.relationToFields[0]],
               },
             });
           }
@@ -825,10 +798,7 @@ export const createPrismaMock = <P>(
 
     Object.keys(objs).forEach((fncName) => {
       client[c][fncName] = async (...params) => {
-        const event =
-          fncName.includes("find") || fncName === "count"
-            ? "onQuery"
-            : ("onMutate" as const);
+        const event = fncName.includes("find") || fncName === "count" ? "onQuery" : ("onMutate" as const);
 
         const response = await objs[fncName](...params);
         options?.[event]?.({
@@ -848,19 +818,13 @@ export const createPrismaMock = <P>(
 
 // Prisma cannot be imported in the browser, so duplicating here
 // instanceof checks will fail, so not ideal
-class PrismaClientKnownRequestError
-  extends Error
-  implements ErrorWithBatchIndex
-{
+class PrismaClientKnownRequestError extends Error implements ErrorWithBatchIndex {
   code: string;
   meta?: Record<string, unknown>;
   clientVersion: string;
   batchRequestIdx?: number;
 
-  constructor(
-    message: string,
-    { code, clientVersion, meta, batchRequestIdx }: KnownErrorParams
-  ) {
+  constructor(message: string, { code, clientVersion, meta, batchRequestIdx }: KnownErrorParams) {
     super(message);
     this.code = code;
     this.clientVersion = clientVersion;

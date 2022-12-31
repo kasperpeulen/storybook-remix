@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { TestRoot } from "../../test/root";
+import { TestApp } from "~/test/TestApp";
 
 const meta = {
   title: "IndexRoute",
-  component: TestRoot,
+  component: TestApp,
   args: {
     url: "/",
     loggedInUser: "none",
   },
-} satisfies Meta<typeof TestRoot>;
+} satisfies Meta<typeof TestApp>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

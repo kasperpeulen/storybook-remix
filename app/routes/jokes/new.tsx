@@ -65,9 +65,7 @@ export default function NewJokeRoute() {
               defaultValue={actionData?.fields?.name}
               name="name"
               aria-invalid={Boolean(actionData?.fieldErrors?.name) || undefined}
-              aria-errormessage={
-                actionData?.fieldErrors?.name ? "name-error" : undefined
-              }
+              aria-errormessage={actionData?.fieldErrors?.name ? "name-error" : undefined}
             />
           </label>
           {actionData?.fieldErrors?.name ? (
@@ -82,20 +80,12 @@ export default function NewJokeRoute() {
             <textarea
               defaultValue={actionData?.fields?.content}
               name="content"
-              aria-invalid={
-                Boolean(actionData?.fieldErrors?.content) || undefined
-              }
-              aria-errormessage={
-                actionData?.fieldErrors?.content ? "content-error" : undefined
-              }
+              aria-invalid={Boolean(actionData?.fieldErrors?.content) || undefined}
+              aria-errormessage={actionData?.fieldErrors?.content ? "content-error" : undefined}
             />
           </label>
           {actionData?.fieldErrors?.content ? (
-            <p
-              className="form-validation-error"
-              role="alert"
-              id="content-error"
-            >
+            <p className="form-validation-error" role="alert" id="content-error">
               {actionData.fieldErrors.content}
             </p>
           ) : null}

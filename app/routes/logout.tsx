@@ -7,6 +7,4 @@ export const action = (async ({ request, context: ctx }) => {
   return logout(ctx, request);
 }) satisfies ActionFunction;
 
-export const loader = (async () => {
-  return redirect("/");
-}) satisfies LoaderFunction;
+export const loader = (() => redirect("/")) satisfies LoaderFunction;

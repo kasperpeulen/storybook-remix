@@ -7,10 +7,7 @@ type LoginForm = {
   password: string;
 };
 
-export async function register(
-  ctx: Context,
-  { username, password }: LoginForm
-) {
+export async function register(ctx: Context, { username, password }: LoginForm) {
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await ctx.db.user.create({
     data: { username, passwordHash },
@@ -80,11 +77,7 @@ export async function logout(ctx: Context, request: Request) {
   });
 }
 
-export async function createUserSession(
-  ctx: Context,
-  userId: string,
-  redirectTo: string
-) {
+export async function createUserSession(ctx: Context, userId: string, redirectTo: string) {
   const session = await ctx.sessionStorage.getSession();
   session.set("userId", userId);
   const cookie = await ctx.sessionStorage.commitSession(session);
@@ -98,5 +91,4 @@ export async function createUserSession(
 
 // You can not set the Set-Cookie of a Response or the Cookie header of a request in the browser
 // So we use Test-Cookie for that, for browser testing.
-export const cookieKey =
-  typeof document === "undefined" ? "Cookie" : "Test-Cookie";
+export const cookieKey = typeof document === "undefined" ? "Cookie" : "Test-Cookie";

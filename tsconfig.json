@@ -1,11 +1,5 @@
 {
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "remix.env.d.ts",
-    "vite.config.ts",
-    "vite-env.d.ts"
-  ],
+  "include": ["**/*.ts", "**/*.tsx", "remix.env.d.ts", "vite.config.ts", "vite-env.d.ts"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2019"],
     "isolatedModules": true,

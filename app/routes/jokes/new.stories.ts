@@ -1,20 +1,20 @@
 import { expect } from "@storybook/jest";
 import type { Meta, StoryObj } from "@storybook/react";
-import { TestRoot } from "../../../test/root";
-import { getJokes } from "~/mocks/jokes";
+import { TestApp } from "~/test/TestApp";
+import { getJokes } from "~/test/mocks/jokes";
 import { userEvent, waitFor, within } from "@storybook/testing-library";
-import { getUsers } from "~/mocks/users";
+import { getUsers } from "~/test/mocks/users";
 
 const meta = {
   title: "NewJokeRoute",
-  component: TestRoot,
+  component: TestApp,
   args: {
     url: "/jokes/new",
     loggedInUser: "kody",
     jokes: getJokes(),
     users: getUsers(),
   },
-} satisfies Meta<typeof TestRoot>;
+} satisfies Meta<typeof TestApp>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -29,11 +29,7 @@ export const TooShortName = {
     await userEvent.type(name, "😅", { delay: 10 });
 
     const content = await canvas.findByLabelText("Content:");
-    await userEvent.type(
-      content,
-      "I was wondering why the frisbee was getting bigger, then it hit me.",
-      { delay: 10 }
-    );
+    await userEvent.type(content, "I was wondering why the frisbee was getting bigger, then it hit me.", { delay: 10 });
 
     const submitButton = await canvas.findByRole("button", { name: /add/i });
     await userEvent.click(submitButton);
@@ -60,8 +56,7 @@ export const Valid = {
     const canvas = within(canvasElement);
 
     const name = "Frisbee";
-    const content =
-      "I was wondering why the frisbee was getting bigger, then it hit me.";
+    const content = "I was wondering why the frisbee was getting bigger, then it hit me.";
 
     const nameInput = await canvas.findByLabelText("Name:");
     await userEvent.type(nameInput, name, { delay: 10 });
