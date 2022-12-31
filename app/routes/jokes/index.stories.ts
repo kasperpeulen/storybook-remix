@@ -28,3 +28,9 @@ export const Logout = {
     await userEvent.click(submitButton);
   },
 } satisfies Story;
+
+export const NotLoggedIn = {
+  args: {
+    loggedInUser: "none",
+  },
+} satisfies Story;

@@ -78,3 +78,8 @@ export const Valid = {
     );
   },
 } satisfies Story;
+
+export const NotLoggedIn = {
+  ...Valid,
+  args: { loggedInUser: "none" },
+} satisfies Story;
