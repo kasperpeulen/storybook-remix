@@ -8,6 +8,9 @@ export const parameters: Parameters = {
       date: /Date$/,
     },
   },
+  docs: {
+    autoplay: true,
+  },
 };
 
 export const args: Args = {
