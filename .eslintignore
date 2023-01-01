@@ -8,5 +8,8 @@ node_modules
 .idea
 /storybook-static
 
-app/utils/prisma-mock.ts
+app/test/utils/prisma-mock.ts
 pnpm-lock.yaml
+
+/coverage
+

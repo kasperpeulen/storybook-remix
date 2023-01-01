@@ -4,6 +4,7 @@ import { Form, useActionData } from "@remix-run/react";
 
 import { badRequest } from "~/utils/request";
 import { requireUserId } from "~/utils/session";
+import { invariant } from "@remix-run/router";
 
 function validateJokeContent(content: string) {
   if (content.length < 10) {
@@ -23,13 +24,7 @@ export const action = async ({ request, context: ctx }: ActionArgs) => {
   const form = await request.formData();
   const name = form.get("name");
   const content = form.get("content");
-  if (typeof name !== "string" || typeof content !== "string") {
-    return badRequest({
-      fieldErrors: null,
-      fields: null,
-      formError: `Form not submitted correctly.`,
-    });
-  }
+  invariant(typeof name === "string" && typeof content === "string");
 
   const fieldErrors = {
     name: validateJokeName(name),
