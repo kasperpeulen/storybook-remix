@@ -1,6 +1,6 @@
-import type { Clock } from "~/context/clock";
-import { TestClock } from "~/context/clock";
-import { NaturalsGenerator } from "~/utils/id-generator";
+import { NaturalsGenerator } from "~/test/utils/id-generator";
+import type { Clock } from "./clock";
+import { TestClock } from "./clock";
 
 /**
  * You can see the TestLayer as being the context of the test context.
@@ -13,10 +13,7 @@ export interface TestLayer {
   };
 }
 
-export function createTestLayer({
-  clock,
-  idGenerator,
-}: Partial<TestLayer> = {}) {
+export function createTestLayer({ clock, idGenerator }: Partial<TestLayer> = {}) {
   return {
     clock: clock ?? new TestClock(new Date(2022, 12, 1)),
     idGenerator: idGenerator ?? new NaturalsGenerator(),

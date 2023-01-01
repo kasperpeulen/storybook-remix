@@ -5,9 +5,7 @@ import stylesUrl from "~/styles/login.css";
 import { badRequest } from "~/utils/request";
 import { createUserSession, login, register } from "~/utils/session";
 
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: stylesUrl },
-];
+export const links: LinksFunction = () => [{ rel: "stylesheet", href: stylesUrl }];
 
 function validateUsername(username: unknown) {
   if (typeof username !== "string" || username.length < 3) {
@@ -36,9 +34,7 @@ export const action = async ({ request, context: ctx }: ActionArgs) => {
   const username = form.get("username");
   const password = form.get("password");
   let redirectTo = form.get("redirectTo");
-  redirectTo = validateUrl(
-    typeof redirectTo === "string" ? redirectTo : "/jokes" ?? "/jokes"
-  );
+  redirectTo = validateUrl(typeof redirectTo === "string" ? redirectTo : "/jokes" ?? "/jokes");
   if (
     typeof loginType !== "string" ||
     typeof username !== "string" ||
@@ -116,11 +112,7 @@ export default function Login() {
       <div className="content" data-light="">
         <h1>Login</h1>
         <Form method="post">
-          <input
-            type="hidden"
-            name="redirectTo"
-            value={searchParams.get("redirectTo") ?? undefined}
-          />
+          <input type="hidden" name="redirectTo" value={searchParams.get("redirectTo") ?? undefined} />
           <fieldset>
             <legend className="sr-only">Login or Register?</legend>
             <label>
@@ -128,10 +120,7 @@ export default function Login() {
                 type="radio"
                 name="loginType"
                 value="login"
-                defaultChecked={
-                  !actionData?.fields?.loginType ||
-                  actionData?.fields?.loginType === "login"
-                }
+                defaultChecked={!actionData?.fields?.loginType || actionData?.fields?.loginType === "login"}
               />{" "}
               Login
             </label>
@@ -153,16 +142,10 @@ export default function Login() {
               name="username"
               defaultValue={actionData?.fields?.username}
               aria-invalid={Boolean(actionData?.fieldErrors?.username)}
-              aria-errormessage={
-                actionData?.fieldErrors?.username ? "username-error" : undefined
-              }
+              aria-errormessage={actionData?.fieldErrors?.username ? "username-error" : undefined}
             />
             {actionData?.fieldErrors?.username ? (
-              <p
-                className="form-validation-error"
-                role="alert"
-                id="username-error"
-              >
+              <p className="form-validation-error" role="alert" id="username-error">
                 {actionData.fieldErrors.username}
               </p>
             ) : null}
@@ -175,16 +158,10 @@ export default function Login() {
               type="password"
               defaultValue={actionData?.fields?.password}
               aria-invalid={Boolean(actionData?.fieldErrors?.password)}
-              aria-errormessage={
-                actionData?.fieldErrors?.password ? "password-error" : undefined
-              }
+              aria-errormessage={actionData?.fieldErrors?.password ? "password-error" : undefined}
             />
             {actionData?.fieldErrors?.password ? (
-              <p
-                className="form-validation-error"
-                role="alert"
-                id="password-error"
-              >
+              <p className="form-validation-error" role="alert" id="password-error">
                 {actionData.fieldErrors.password}
               </p>
             ) : null}

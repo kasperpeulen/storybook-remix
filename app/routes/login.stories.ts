@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { TestRoot } from "../../test/root";
+import { TestApp } from "~/test/TestApp";
 import { userEvent, within } from "@storybook/testing-library";
 import { Valid as NewValidJoke } from "~/routes/jokes/new.stories";
-import { getJokes } from "~/mocks/jokes";
-import { getUsers } from "~/mocks/users";
+import { getJokes } from "~/test/mocks/jokes";
+import { getUsers } from "~/test/mocks/users";
 
 const meta = {
   title: "Login",
-  component: TestRoot,
+  component: TestApp,
   args: {
     url: "/login",
     loggedInUser: "none",
@@ -15,7 +15,7 @@ const meta = {
     users: getUsers(),
   },
   tags: ["autodocs"],
-} satisfies Meta<typeof TestRoot>;
+} satisfies Meta<typeof TestApp>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -94,6 +94,24 @@ export const RegisterWithShortPassword = {
 
     const password = await canvas.findByLabelText("Password");
     await userEvent.type(password, "test", { delay: 10 });
+
+    const submitButton = await canvas.findByRole("button", { name: /submit/i });
+    await userEvent.click(submitButton);
+  },
+} satisfies Story;
+
+export const RegisterWithShortName = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const register = await canvas.findByLabelText("Register");
+    await userEvent.click(register);
+
+    const name = await canvas.findByLabelText("Username");
+    await userEvent.type(name, "mr", { delay: 10 });
+
+    const password = await canvas.findByLabelText("Password");
+    await userEvent.type(password, "testtest", { delay: 10 });
 
     const submitButton = await canvas.findByRole("button", { name: /submit/i });
     await userEvent.click(submitButton);

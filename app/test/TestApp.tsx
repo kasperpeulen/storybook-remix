@@ -1,34 +1,23 @@
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  Location,
-  Router,
-} from "@remix-run/router";
+import type { ActionFunctionArgs, LoaderFunctionArgs, Location, Router } from "@remix-run/router";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import IndexRoute from "~/routes";
 import JokesRoute, { loader as jokesLoader } from "~/routes/jokes";
-import JokesIndexRoute, {
-  loader as jokesIndexLoader,
-} from "~/routes/jokes/index";
+import JokesIndexRoute, { loader as jokesIndexLoader } from "~/routes/jokes/index";
 import NewJokeRoute, { action as newJokeAction } from "~/routes/jokes/new";
 import JokeRoute, { loader as jokeLoader } from "~/routes/jokes/$jokeId";
-import { createTestContext } from "~/context/test-context";
+import { createTestContext } from "~/test/context/context";
 import type { Prisma } from "@prisma/client";
-import type { Event } from "~/utils/prisma-mock";
-import { createPrismaMock } from "~/utils/prisma-mock";
-import dmmf from "../prisma/dmmf.json";
+import type { Event } from "~/test/utils/prisma-mock";
+import { createPrismaMock } from "~/test/utils/prisma-mock";
+import dmmf from "../../prisma/dmmf.json";
 import { useEffect, useRef, useState } from "react";
-import type {
-  ActionFunction,
-  LoaderFunction,
-  SessionData,
-} from "@remix-run/node";
+import type { ActionFunction, LoaderFunction, SessionData } from "@remix-run/node";
 import Login, { action as loginAction } from "~/routes/login";
 import { action as logoutAction } from "~/routes/logout";
-import { createSeedData } from "~/mocks/seed";
+import { createSeedData } from "~/test/mocks/seed";
 import { cookieKey } from "~/utils/session";
-import { createTestLayer } from "~/context/test-layer";
-import { sleep } from "~/context/clock";
+import { createTestLayer } from "~/test/context/test-layer";
+import { sleep } from "./context/clock";
 
 interface TestRootProps {
   /**
@@ -54,7 +43,7 @@ interface TestRootProps {
   onCookieSet(data: SessionData & { cookie: string }): void;
 }
 
-export function TestRoot({
+export function TestApp({
   url,
   loggedInUser,
   jokes,
@@ -93,8 +82,7 @@ export function TestRoot({
       }
 
       const withMiddleware =
-        (fn: LoaderFunction | ActionFunction) =>
-        async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
+        (fn: LoaderFunction | ActionFunction) => async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
           if (cookie.current) {
             args.request.headers.set(`${cookieKey}`, cookie.current);
           }
@@ -112,13 +100,7 @@ export function TestRoot({
             }
           }
           await sleep(
-            connection === "fast"
-              ? 100
-              : connection === "slow"
-              ? 500
-              : connection === "super slow"
-              ? 1000
-              : 0
+            connection === "fast" ? 100 : connection === "slow" ? 500 : connection === "super slow" ? 1000 : 0
           );
           return response;
         };
@@ -171,17 +153,7 @@ export function TestRoot({
         if (navigation.state === "idle") onLocationChanged(location);
       });
     })();
-  }, [
-    jokes,
-    url,
-    onLocationChanged,
-    onQuery,
-    onMutate,
-    loggedInUser,
-    onCookieSet,
-    users,
-    connection,
-  ]);
+  }, [jokes, url, onLocationChanged, onQuery, onMutate, loggedInUser, onCookieSet, users, connection]);
 
   if (router == null) return null;
 

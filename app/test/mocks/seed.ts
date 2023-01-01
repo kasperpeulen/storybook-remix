@@ -1,7 +1,7 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import type { PrismaMockData } from "~/utils/prisma-mock";
-import { getUsers } from "~/mocks/users";
-import { getJokes } from "~/mocks/jokes";
+import type { PrismaMockData } from "~/test/utils/prisma-mock";
+import { getUsers } from "./users";
+import { getJokes } from "./jokes";
 
 export async function seed(db: PrismaClient) {
   await Promise.all(getUsers().map((user) => db.user.create({ data: user })));

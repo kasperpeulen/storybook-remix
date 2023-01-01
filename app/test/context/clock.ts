@@ -11,12 +11,10 @@ export class LiveClock {
 
 export const sleep = (ms: number) => {
   let cancel;
-  const promise: Promise<void> & { cancel?: () => void } = new Promise(
-    (resolve) => {
-      const timer = setTimeout(resolve, ms);
-      cancel = () => clearTimeout(timer);
-    }
-  );
+  const promise: Promise<void> & { cancel?: () => void } = new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    cancel = () => clearTimeout(timer);
+  });
   promise.cancel = cancel;
   return promise;
 };

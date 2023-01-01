@@ -16,8 +16,8 @@ export default defineConfig({
     istanbul({
       checkProd: false,
       forceBuildInstrument: true,
-      include: ["app/routes/*", "app/utils/request*", "app/utils/session*"],
-      exclude: ["node_modules", "test/", "*.stories*"],
+      include: ["app/**/*"],
+      exclude: ["node_modules", "app/test/**/*", "**/*.stories.ts"],
       extension: [".ts", ".tsx"],
     }),
   ],

@@ -21,7 +21,7 @@
     "generate-dmmf": "node --require esbuild-register prisma/dmmf.ts",
     "seed": "node --require esbuild-register prisma/seed.ts && pnpm run generate-dmmf",
     "test-storybook": "test-storybook",
-    "test-storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"yarn build-storybook --quiet && npx http-server storybook-static --port 6006 --silent\" \"wait-on http://127.0.0.1:6006 && yarn test-storybook --coverage --url http://127.0.0.1:6006\"",
+    "test-storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"yarn build-storybook --quiet && npx http-server storybook-static --port 6007 --silent\" \"wait-on http://127.0.0.1:6007 && yarn test-storybook --coverage --url http://127.0.0.1:6007\"",
     "ci": "pnpm run prettier:check && pnpm run eslint && pnpm run typecheck && pnpm run test-storybook:ci"
   },
   "dependencies": {
@@ -96,6 +96,7 @@
     "node": ">=18"
   },
   "prettier": {
+    "printWidth": 120,
     "plugins": [
       "prettier-plugin-prisma"
     ]
