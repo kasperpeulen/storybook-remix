@@ -1,4 +1,5 @@
-import { Args, Parameters } from "@storybook/react";
+import { Parameters } from "@storybook/react";
+import { testAppDefaultProps } from "~/test/TestApp";
 
 export const parameters: Parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
@@ -13,6 +14,6 @@ export const parameters: Parameters = {
   },
 };
 
-export const args: Args = {
-  connection: "super fast",
-};
+// By setting the default props here, storybook can show the default prop in the control panel as well.
+// Alternatively, could be spread in every meta args as well.
+export const args = testAppDefaultProps;

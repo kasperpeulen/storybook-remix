@@ -18,8 +18,10 @@ import { createSeedData } from "~/test/mocks/seed";
 import { cookieKey } from "~/utils/session";
 import { createTestLayer } from "~/test/context/test-layer";
 import { sleep } from "./utils/clock";
+import { getJokes } from "~/test/mocks/jokes";
+import { getUsers } from "~/test/mocks/users";
 
-interface TestRootProps {
+interface TestAppProps {
   /**
    * The url of the application, can be one of:
    * * "/"
@@ -29,7 +31,7 @@ interface TestRootProps {
    * * "/login"
    */
   url: string;
-  loggedInUser: "none" | "kody" | "mr.bean";
+  loggedInUser?: "none" | "kody" | "mr.bean";
   connection?: "super fast" | "fast" | "slow" | "super slow";
   jokes?: Prisma.JokeUncheckedCreateInput[];
   users?: Prisma.UserUncheckedCreateInput[];
@@ -44,19 +46,28 @@ interface TestRootProps {
   onCookieSet(data: SessionData & { cookie: string; expires: Date }): void;
 }
 
-export function TestApp({
-  url,
-  loggedInUser,
-  jokes,
-  users,
-  onLocationChanged,
-  onQuery,
-  onMutate,
-  onCookieSet,
-  connection,
-  onRequest,
-  onResponse,
-}: TestRootProps) {
+export const testAppDefaultProps = {
+  loggedInUser: "kody",
+  connection: "super fast",
+  jokes: getJokes(),
+  users: getUsers(),
+} satisfies Partial<TestAppProps>;
+
+export function TestApp(props: TestAppProps) {
+  const {
+    url,
+    loggedInUser,
+    jokes,
+    users,
+    onLocationChanged,
+    onQuery,
+    onMutate,
+    onCookieSet,
+    connection,
+    onRequest,
+    onResponse,
+  } = { ...testAppDefaultProps, ...props };
+
   const dataModel = dmmf.datamodel as Prisma.DMMF.Datamodel;
   const testLayer = createTestLayer();
   const ctx = createTestContext({

@@ -1,9 +1,8 @@
 import { expect } from "@storybook/jest";
 import type { Meta, StoryObj } from "@storybook/react";
 import { TestApp } from "~/test/TestApp";
-import { getJokes } from "~/test/mocks/jokes";
 import { userEvent, waitFor, within } from "@storybook/testing-library";
-import { getUsers } from "~/test/mocks/users";
+import type { PlayContext } from "~/test/utils/storybook";
 
 const meta = {
   title: "NewJokeRoute",
@@ -11,8 +10,6 @@ const meta = {
   args: {
     url: "/jokes/new",
     loggedInUser: "kody",
-    jokes: getJokes(),
-    users: getUsers(),
   },
 } satisfies Meta<typeof TestApp>;
 
@@ -21,9 +18,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default = {} satisfies Story;
 
-type Ctx = Parameters<typeof TooShortName["play"]>[0];
-
-async function postJoke({ canvasElement }: Ctx, name: string, content: string) {
+async function postJoke({ canvasElement }: PlayContext, name: string, content: string) {
   const canvas = within(canvasElement);
 
   const nameInput = await canvas.findByLabelText("Name:");

@@ -2,8 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { TestApp } from "~/test/TestApp";
 import { userEvent, within } from "@storybook/testing-library";
 import { Valid as NewValidJoke } from "~/routes/jokes/new.stories";
-import { getJokes } from "~/test/mocks/jokes";
-import { getUsers } from "~/test/mocks/users";
+import type { PlayContext } from "~/test/utils/storybook";
 
 const meta = {
   title: "Login",
@@ -11,8 +10,6 @@ const meta = {
   args: {
     url: "/login",
     loggedInUser: "none",
-    jokes: getJokes(),
-    users: getUsers(),
   },
   tags: ["autodocs"],
 } satisfies Meta<typeof TestApp>;
@@ -22,33 +19,30 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-export const WrongPassword = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
+async function login(ctx: PlayContext, name: string, password: string) {
+  const canvas = within(ctx.canvasElement);
 
-    const name = await canvas.findByLabelText("Username");
-    await userEvent.type(name, "kody", { delay: 10 });
+  await userEvent.type(await canvas.findByLabelText("Username"), name, { delay: 10 });
+  await userEvent.type(await canvas.findByLabelText("Password"), password, { delay: 10 });
+  await userEvent.click(await canvas.findByRole("button", { name: /submit/i }));
+}
 
-    const password = await canvas.findByLabelText("Password");
-    await userEvent.type(password, "123456", { delay: 10 });
+async function register(ctx: PlayContext, name: string, password: string) {
+  const canvas = within(ctx.canvasElement);
 
-    const submitButton = await canvas.findByRole("button", { name: /submit/i });
-    await userEvent.click(submitButton);
+  await userEvent.click(await canvas.findByLabelText("Register"));
+  await login(ctx, name, password);
+}
+
+export const Login = {
+  play: async (context) => {
+    await login(context, "kody", "testtest");
   },
 } satisfies Story;
 
-export const Login = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const name = await canvas.findByLabelText("Username");
-    await userEvent.type(name, "kody", { delay: 10 });
-
-    const password = await canvas.findByLabelText("Password");
-    await userEvent.type(password, "testtest", { delay: 10 });
-
-    const submitButton = await canvas.findByRole("button", { name: /submit/i });
-    await userEvent.click(submitButton);
+export const WrongPassword = {
+  play: async (context) => {
+    await login(context, "kody", "123456");
   },
 } satisfies Story;
 
@@ -57,82 +51,33 @@ export const LoginAndPost: Story = {
     const canvas = within(context.canvasElement);
     await Login.play(context);
 
-    const link = await canvas.findByRole("link", { name: /add your own/i });
-    await userEvent.click(link);
+    await userEvent.click(await canvas.findByRole("link", { name: /add your own/i }));
 
     await NewValidJoke.play(context);
   },
 };
 
 export const RegisterUsedAccount = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const register = await canvas.findByLabelText("Register");
-    await userEvent.click(register);
-
-    const name = await canvas.findByLabelText("Username");
-    await userEvent.type(name, "mr.bean", { delay: 10 });
-
-    const password = await canvas.findByLabelText("Password");
-    await userEvent.type(password, "testtest", { delay: 10 });
-
-    const submitButton = await canvas.findByRole("button", { name: /submit/i });
-    await userEvent.click(submitButton);
+  play: async (context) => {
+    await register(context, "mr.bean", "testtest");
   },
 } satisfies Story;
 
 export const RegisterWithShortPassword = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const register = await canvas.findByLabelText("Register");
-    await userEvent.click(register);
-
-    const name = await canvas.findByLabelText("Username");
-    await userEvent.type(name, "mr.bean2", { delay: 10 });
-
-    const password = await canvas.findByLabelText("Password");
-    await userEvent.type(password, "test", { delay: 10 });
-
-    const submitButton = await canvas.findByRole("button", { name: /submit/i });
-    await userEvent.click(submitButton);
+  play: async (context) => {
+    await register(context, "mr.bean", "test");
   },
 } satisfies Story;
 
 export const RegisterWithShortName = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const register = await canvas.findByLabelText("Register");
-    await userEvent.click(register);
-
-    const name = await canvas.findByLabelText("Username");
-    await userEvent.type(name, "mr", { delay: 10 });
-
-    const password = await canvas.findByLabelText("Password");
-    await userEvent.type(password, "testtest", { delay: 10 });
-
-    const submitButton = await canvas.findByRole("button", { name: /submit/i });
-    await userEvent.click(submitButton);
+  play: async (context) => {
+    await register(context, "mr", "test");
   },
 } satisfies Story;
 
 export const RegisterNewAccount = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const register = await canvas.findByLabelText("Register");
-    await userEvent.click(register);
-
-    const name = await canvas.findByLabelText("Username");
-    await userEvent.type(name, "mr.bean2", { delay: 10 });
-
-    const password = await canvas.findByLabelText("Password");
-    await userEvent.type(password, "testtest", { delay: 10 });
-
-    const submitButton = await canvas.findByRole("button", { name: /submit/i });
-    await userEvent.click(submitButton);
+  play: async (context) => {
+    await register(context, "mr.bean2", "testtest");
   },
 } satisfies Story;
 
