@@ -13,7 +13,3 @@ export const parameters: Parameters = {
     autoplay: true,
   },
 };
-
-// By setting the default props here, storybook can show the default prop in the control panel as well.
-// Alternatively, could be spread in every meta args as well.
-export const args = testAppDefaultProps;

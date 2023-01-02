@@ -1,10 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { TestApp } from "~/test/TestApp";
+import { TestApp, testAppDefaultProps } from "~/test/TestApp";
 
 const meta = {
   title: "IndexRoute",
   component: TestApp,
   args: {
+    ...testAppDefaultProps,
     url: "/",
     loggedInUser: "none",
   },

@@ -4,7 +4,7 @@ import IndexRoute from "~/routes";
 import JokesRoute, { loader as jokesLoader } from "~/routes/jokes";
 import JokesIndexRoute, { loader as jokesIndexLoader } from "~/routes/jokes/index";
 import NewJokeRoute, { action as newJokeAction } from "~/routes/jokes/new";
-import JokeRoute, { loader as jokeLoader } from "~/routes/jokes/$jokeId";
+import JokeRoute, { ErrorBoundary, loader as jokeLoader } from "~/routes/jokes/$jokeId";
 import { createTestContext } from "~/test/context/context";
 import type { Prisma } from "@prisma/client";
 import type { Event } from "~/test/utils/prisma-mock";
@@ -31,13 +31,13 @@ interface TestAppProps {
    * * "/login"
    */
   url: string;
-  loggedInUser?: "none" | "kody" | "mr.bean";
-  connection?: "super fast" | "fast" | "slow" | "super slow";
-  clock?: "test" | "live";
-  testClock?: TestClock;
+  loggedInUser: "none" | "kody" | "mr.bean";
+  connection: "super fast" | "fast" | "slow" | "super slow";
+  clock: "test" | "live";
+  testClockDate: Date;
 
-  jokes?: Prisma.JokeUncheckedCreateInput[];
-  users?: Prisma.UserUncheckedCreateInput[];
+  jokes: Prisma.JokeUncheckedCreateInput[];
+  users: Prisma.UserUncheckedCreateInput[];
 
   onLocationChanged(location: Location): void;
 
@@ -50,33 +50,32 @@ interface TestAppProps {
 }
 
 export const testAppDefaultProps = {
+  url: "/",
   loggedInUser: "kody",
   connection: "super fast",
   clock: "test",
-  testClock: new TestClock(new Date(2022, 11, 25)),
+  testClockDate: new Date(2022, 11, 25),
   jokes: getJokes(),
   users: getUsers(),
 } satisfies Partial<TestAppProps>;
 
-export function TestApp(props: TestAppProps) {
-  const {
-    url,
-    loggedInUser,
-    jokes,
-    users,
-    onLocationChanged,
-    onQuery,
-    onMutate,
-    onCookieSet,
-    connection,
-    onRequest,
-    onResponse,
-    clock,
-    testClock,
-  } = { ...testAppDefaultProps, ...props };
-
+export function TestApp({
+  url,
+  loggedInUser,
+  jokes,
+  users,
+  onLocationChanged,
+  onQuery,
+  onMutate,
+  onCookieSet,
+  connection,
+  onRequest,
+  onResponse,
+  clock,
+  testClockDate,
+}: TestAppProps) {
   const dataModel = dmmf.datamodel as Prisma.DMMF.Datamodel;
-  const testLayer = createTestLayer({ clock: clock === "test" ? testClock : new LiveClock() });
+  const testLayer = createTestLayer({ clock: clock === "test" ? new TestClock(testClockDate) : new LiveClock() });
   const ctx = createTestContext({
     db: createPrismaMock(dataModel, {
       onMutate,
@@ -102,12 +101,16 @@ export function TestApp(props: TestAppProps) {
 
   const withMiddleware =
     (fn: LoaderFunction | ActionFunction) => async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
-      if (loggedInUser !== "none" && (onCookieSet as jest.Mock).mock.calls.length === 0) {
-        const user = await ctx.db.user.findUnique({ where: { username: loggedInUser } });
-        if (user) {
-          const session = await ctx.sessionStorage.getSession();
-          session.set("userId", user.id);
-          await setCookie(await ctx.sessionStorage.commitSession(session));
+      if ((onCookieSet as jest.Mock).mock.calls.length === 0) {
+        if (loggedInUser !== "none") {
+          const user = await ctx.db.user.findUnique({ where: { username: loggedInUser } });
+          if (user) {
+            const session = await ctx.sessionStorage.getSession();
+            session.set("userId", user.id);
+            await setCookie(await ctx.sessionStorage.commitSession(session));
+          }
+        } else {
+          cookieRef.current = undefined;
         }
       }
 
@@ -128,7 +131,9 @@ export function TestApp(props: TestAppProps) {
 
       const response = await fn({ ...args, context: ctx });
 
-      await sleep(connection === "fast" ? 100 : connection === "slow" ? 500 : connection === "super slow" ? 1000 : 0);
+      if (connection !== "super fast") {
+        await sleep(connection === "fast" ? 100 : connection === "slow" ? 500 : 1000);
+      }
 
       if (response instanceof Response) {
         onResponse({
@@ -168,6 +173,7 @@ export function TestApp(props: TestAppProps) {
             path: ":jokeId",
             loader: withMiddleware(jokeLoader),
             element: <JokeRoute />,
+            errorElement: <ErrorBoundary />,
           },
         ],
       },
