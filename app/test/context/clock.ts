@@ -23,7 +23,7 @@ export class TestClock {
   constructor(private date: Date) {}
 
   now = () => {
-    this.date = new Date(this.date.getTime() + 1000 * 60);
+    this.date = new Date(this.date.getTime() + 1000);
     return this.date;
   };
 

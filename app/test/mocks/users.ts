@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import * as bcrypt from "@isbl/bcryptjs";
 
 export function getUsers(): Prisma.UserUncheckedCreateInput[] {
   return [

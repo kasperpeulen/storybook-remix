@@ -145,6 +145,8 @@ export const createPrismaMock = <P>(
         return getCamelCase(model.name) === prop;
       });
 
+      const now = clock.now();
+
       model.fields.forEach((field) => {
         if (d[field.name]) {
           const c = d[field.name];
@@ -331,7 +333,7 @@ export const createPrismaMock = <P>(
           if (field.isUpdatedAt) {
             d = {
               ...d,
-              [field.name]: clock.now(),
+              [field.name]: now,
             };
           }
           if (field.hasDefaultValue) {
@@ -363,7 +365,7 @@ export const createPrismaMock = <P>(
               } else if (field.default.name === "now") {
                 d = {
                   ...d,
-                  [field.name]: clock.now(),
+                  [field.name]: now,
                 };
               } else {
                 d = {
@@ -806,7 +808,6 @@ export const createPrismaMock = <P>(
           method: fncName,
           ...(typeof params[0] === "object" ? params[0] : {}),
           db: { ...data },
-          date: new Date().getTime(),
         });
         return response;
       };

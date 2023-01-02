@@ -5,7 +5,7 @@ import type { Prisma } from "@prisma/client";
 import { createSeedData } from "~/test/mocks/seed";
 import { createTestLayer } from "~/test/context/test-layer";
 import { TestRandom } from "./random";
-import { createTestMemorySessionStorage } from "~/test/context/session";
+import { createTestCookieSessionStorage } from "~/test/context/session";
 
 export function createTestContext({ db, random, sessionStorage }: Partial<Context> = {}): Context &
   Record<string, unknown> {
@@ -17,13 +17,11 @@ export function createTestContext({ db, random, sessionStorage }: Partial<Contex
     random: random ?? new TestRandom(),
     sessionStorage:
       sessionStorage ??
-      createTestMemorySessionStorage({
+      createTestCookieSessionStorage({
         cookie: {
           name: "RJ_session",
           secure: false,
-          secrets: [""],
-          sameSite: "lax",
-          path: "/",
+          secrets: ["secret"],
           maxAge: 60 * 60 * 24 * 30,
           httpOnly: true,
         },

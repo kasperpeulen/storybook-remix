@@ -7,7 +7,7 @@ const meta = {
   title: "JokeRoute",
   component: TestApp,
   args: {
-    url: "/jokes/3",
+    url: "/jokes/cc31033b-5da7-5c9e-adf2-80a2963e19a8",
     loggedInUser: "kody",
     jokes: getJokes(),
     users: getUsers(),

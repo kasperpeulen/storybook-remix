@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+import * as bcrypt from "@isbl/bcryptjs";
 import { redirect } from "@remix-run/server-runtime";
 import type { Context } from "~/context/context";
 

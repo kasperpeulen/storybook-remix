@@ -1,4 +1,4 @@
-import { NaturalsGenerator } from "~/test/utils/id-generator";
+import { UuidV5Generator } from "~/test/utils/id-generator";
 import type { Clock } from "./clock";
 import { TestClock } from "./clock";
 
@@ -15,7 +15,7 @@ export interface TestLayer {
 
 export function createTestLayer({ clock, idGenerator }: Partial<TestLayer> = {}) {
   return {
-    clock: clock ?? new TestClock(new Date(2022, 12, 1)),
-    idGenerator: idGenerator ?? new NaturalsGenerator(),
+    clock: clock ?? new TestClock(new Date(2023, 0, 1)),
+    idGenerator: idGenerator ?? new UuidV5Generator(),
   };
 }

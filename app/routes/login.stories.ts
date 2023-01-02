@@ -30,7 +30,7 @@ export const WrongPassword = {
     await userEvent.type(name, "kody", { delay: 10 });
 
     const password = await canvas.findByLabelText("Password");
-    await userEvent.type(password, "test", { delay: 10 });
+    await userEvent.type(password, "123456", { delay: 10 });
 
     const submitButton = await canvas.findByRole("button", { name: /submit/i });
     await userEvent.click(submitButton);
