@@ -17,7 +17,7 @@ import { action as logoutAction } from "~/routes/logout";
 import { createSeedData } from "~/test/mocks/seed";
 import { cookieKey } from "~/utils/session";
 import { createTestLayer } from "~/test/context/test-layer";
-import { sleep } from "./utils/clock";
+import { LiveClock, sleep, TestClock } from "./utils/clock";
 import { getJokes } from "~/test/mocks/jokes";
 import { getUsers } from "~/test/mocks/users";
 
@@ -33,6 +33,9 @@ interface TestAppProps {
   url: string;
   loggedInUser?: "none" | "kody" | "mr.bean";
   connection?: "super fast" | "fast" | "slow" | "super slow";
+  clock?: "test" | "live";
+  testClock?: TestClock;
+
   jokes?: Prisma.JokeUncheckedCreateInput[];
   users?: Prisma.UserUncheckedCreateInput[];
 
@@ -49,6 +52,8 @@ interface TestAppProps {
 export const testAppDefaultProps = {
   loggedInUser: "kody",
   connection: "super fast",
+  clock: "test",
+  testClock: new TestClock(new Date(2022, 11, 25)),
   jokes: getJokes(),
   users: getUsers(),
 } satisfies Partial<TestAppProps>;
@@ -66,10 +71,12 @@ export function TestApp(props: TestAppProps) {
     connection,
     onRequest,
     onResponse,
+    clock,
+    testClock,
   } = { ...testAppDefaultProps, ...props };
 
   const dataModel = dmmf.datamodel as Prisma.DMMF.Datamodel;
-  const testLayer = createTestLayer();
+  const testLayer = createTestLayer({ clock: clock === "test" ? testClock : new LiveClock() });
   const ctx = createTestContext({
     db: createPrismaMock(dataModel, {
       onMutate,
