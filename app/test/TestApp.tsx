@@ -17,7 +17,7 @@ import { action as logoutAction } from "~/routes/logout";
 import { createSeedData } from "~/test/mocks/seed";
 import { cookieKey } from "~/utils/session";
 import { createTestLayer } from "~/test/context/test-layer";
-import { sleep } from "./context/clock";
+import { sleep } from "./utils/clock";
 
 interface TestRootProps {
   /**

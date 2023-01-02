@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { Prisma } from "@prisma/client";
-import type { Clock } from "~/test/context/clock";
-import { LiveClock } from "~/test/context/clock";
+import type { Clock } from "~/test/utils/clock";
+import { LiveClock } from "~/test/utils/clock";
 import type { IdGenerator } from "~/test/utils/id-generator";
 import { UuidV4Generator } from "~/test/utils/id-generator";
 

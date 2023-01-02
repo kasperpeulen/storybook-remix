@@ -1,6 +1,6 @@
 import { UuidV5Generator } from "~/test/utils/id-generator";
-import type { Clock } from "./clock";
-import { TestClock } from "./clock";
+import type { Clock } from "../utils/clock";
+import { TestClock } from "../utils/clock";
 
 /**
  * You can see the TestLayer as being the context of the test context.

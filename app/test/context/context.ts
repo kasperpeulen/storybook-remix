@@ -4,8 +4,8 @@ import json from "../../../prisma/dmmf.json";
 import type { Prisma } from "@prisma/client";
 import { createSeedData } from "~/test/mocks/seed";
 import { createTestLayer } from "~/test/context/test-layer";
-import { TestRandom } from "./random";
-import { createTestCookieSessionStorage } from "~/test/context/session";
+import { TestRandom } from "../utils/random";
+import { createTestCookieSessionStorage } from "~/test/utils/testCookieStorage";
 
 export function createTestContext({ db, random, sessionStorage }: Partial<Context> = {}): Context &
   Record<string, unknown> {
