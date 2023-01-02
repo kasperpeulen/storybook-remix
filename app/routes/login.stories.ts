@@ -65,13 +65,13 @@ export const RegisterUsedAccount = {
 
 export const RegisterWithShortPassword = {
   play: async (context) => {
-    await register(context, "mr.bean", "test");
+    await register(context, "mr.bean2", "test");
   },
 } satisfies Story;
 
 export const RegisterWithShortName = {
   play: async (context) => {
-    await register(context, "mr", "test");
+    await register(context, "mr", "testtest");
   },
 } satisfies Story;
 
