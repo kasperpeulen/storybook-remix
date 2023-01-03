@@ -1,9 +1,9 @@
 // @ts-nocheck
-import type { Prisma } from "@prisma/client";
 import type { Clock } from "~/test/utils/clock";
 import { LiveClock } from "~/test/utils/clock";
 import type { IdGenerator } from "~/test/utils/id-generator";
 import { UuidV4Generator } from "~/test/utils/id-generator";
+import type { PrismaClient, Prisma } from "@prisma/client";
 
 type UnwrapPromise<P extends any> = P extends Promise<infer R> ? R : P;
 
@@ -22,25 +22,17 @@ export type PrismaMockData<P> = Partial<{
   [key in IsTable<Uncapitalize<IsString<keyof P>>>]: PrismaList<P, key>;
 }>;
 
-export interface Event {
-  table: string;
-  method: string;
-  params: any[];
-}
-
 export const createPrismaMock = <P>(
   datamodel: Prisma.DMMF.Datamodel,
   options?: {
     data?: PrismaMockData<P>;
-    onQuery?: (data: { table: string; method: string; params: any[] }) => void;
-    onMutate?: (data: { table: string; method: string; params: any[] }) => void;
     clock?: Clock;
     idGenerator?: IdGenerator;
   }
 ): P => {
   const initialData = options?.data ?? ({} as PrismaMockData<P>);
   let data = {};
-  const client = {};
+  const client = {} as PrismaClient;
   const clock = options?.clock ?? new LiveClock();
   const idGenerator = options?.idGenerator ?? new UuidV4Generator();
 
@@ -779,6 +771,30 @@ export const createPrismaMock = <P>(
     };
   };
 
+  const middlewares: Prisma.Middleware[] = [];
+
+  client.$use = (middleware) => {
+    middlewares.push(middleware);
+  };
+
+  function wrapMiddlewares<T>(
+    middlewares: Prisma.Middleware[],
+    next: (params: Prisma.MiddlewareParams) => Promise<T>
+  ): (params: Prisma.MiddlewareParams) => Promise<T> {
+    const invokeMiddlewares = async (params: Prisma.MiddlewareParams, middlewares: Prisma.Middleware[]) => {
+      if (middlewares.length === 0) {
+        return await next(params);
+      }
+      const mw = middlewares[0];
+
+      return await mw(params, async (params) => {
+        return await invokeMiddlewares(params, middlewares.slice(1));
+      });
+    };
+
+    return (params) => invokeMiddlewares(params, middlewares);
+  }
+
   datamodel.models.forEach((model) => {
     if (!model) return;
     const c = getCamelCase(model.name);
@@ -800,16 +816,13 @@ export const createPrismaMock = <P>(
 
     Object.keys(objs).forEach((fncName) => {
       client[c][fncName] = async (...params) => {
-        const event = fncName.includes("find") || fncName === "count" ? "onQuery" : ("onMutate" as const);
-
-        const response = await objs[fncName](...params);
-        options?.[event]?.({
+        return await wrapMiddlewares(middlewares, async (params) => objs[fncName](params.args))({
+          args: params[0],
+          model: model.name,
+          action: fncName,
           table: c,
-          method: fncName,
-          ...(typeof params[0] === "object" ? params[0] : {}),
           db: { ...data },
         });
-        return response;
       };
     });
   });

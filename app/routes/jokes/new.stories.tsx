@@ -1,17 +1,18 @@
 import { expect } from "@storybook/jest";
 import type { Meta, StoryObj } from "@storybook/react";
-import { TestApp, testAppDefaultProps } from "~/test/TestApp";
+import { TestAppStory, testAppDefaultProps } from "~/test/TestApp";
 import { userEvent, waitFor, within } from "@storybook/testing-library";
 import type { PlayContext } from "~/test/utils/storybook";
+import type { jest } from "@storybook/jest";
 
 const meta = {
   title: "NewJokeRoute",
-  component: TestApp,
+  component: TestAppStory,
   args: {
     ...testAppDefaultProps,
     url: "/jokes/new",
   },
-} satisfies Meta<typeof TestApp>;
+} satisfies Meta<typeof TestAppStory>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -52,10 +53,12 @@ export const Valid = {
 
     await postJoke(context, name, content);
 
-    await waitFor(() =>
-      expect(args.onMutate).toHaveBeenCalledWith(
-        expect.objectContaining({ table: "joke", method: "create", data: expect.objectContaining({ name, content }) })
-      )
+    // TODO we should type all arg function starting with on as Jest Mock
+    (args.onLocationChanged as jest.Mock).mockReset();
+    await waitFor(() => expect(args.onLocationChanged).toHaveBeenCalled());
+
+    expect(args.onMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ model: "Joke", action: "create", data: expect.objectContaining({ name, content }) })
     );
   },
 } satisfies Story;
@@ -74,7 +77,7 @@ export const NotLoggedIn = {
       expect(args.onLocationChanged).toHaveBeenCalledWith(expect.objectContaining({ pathname: "/login" }));
     });
 
-    expect(args.onMutate).not.toHaveBeenCalledWith(expect.objectContaining({ table: "joke", method: "create" }));
+    expect(args.onMutate).not.toHaveBeenCalledWith(expect.objectContaining({ model: "Joke", action: "create" }));
   },
 } satisfies Story;
 
@@ -105,6 +108,6 @@ export const NotLoggedIn = {
 //     });
 //
 //     // Should not post joke
-//     expect(args.onMutate).not.toHaveBeenCalledWith(expect.objectContaining({ table: "joke", method: "create" }));
+//     expect(args.onMutate).not.toHaveBeenCalledWith(expect.objectContaining({ table: "joke", action: "create" }));
 //   },
 // } satisfies Story;

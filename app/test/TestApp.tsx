@@ -5,9 +5,9 @@ import JokesRoute, { loader as jokesLoader } from "~/routes/jokes";
 import JokesIndexRoute, { loader as jokesIndexLoader } from "~/routes/jokes/index";
 import NewJokeRoute, { action as newJokeAction } from "~/routes/jokes/new";
 import JokeRoute, { ErrorBoundary, loader as jokeLoader } from "~/routes/jokes/$jokeId";
+import type { TestContext } from "~/test/context/context";
 import { createTestContext } from "~/test/context/context";
 import type { Prisma } from "@prisma/client";
-import type { Event } from "~/test/utils/prisma-mock";
 import { createPrismaMock } from "~/test/utils/prisma-mock";
 import dmmf from "../../prisma/dmmf.json";
 import { useEffect, useRef } from "react";
@@ -21,7 +21,7 @@ import { LiveClock, sleep, TestClock } from "./utils/clock";
 import { getJokes } from "~/test/mocks/jokes";
 import { getUsers } from "~/test/mocks/users";
 
-interface TestAppProps {
+interface TestAppStoryProps {
   /**
    * The url of the application, can be one of:
    * * "/"
@@ -41,12 +41,17 @@ interface TestAppProps {
 
   onLocationChanged(location: Location): void;
 
-  onQuery(event: Event): void;
+  onQuery(event: DbEvent): void;
   onRequest(request: object): void;
   onResponse(response: object): void;
-  onMutate(event: Event): void;
+  onMutate(event: DbEvent): void;
 
   onCookieSet(data: SessionData & { cookie: string; expires: Date }): void;
+}
+
+export interface DbEvent {
+  model: string;
+  action: string;
 }
 
 export const testAppDefaultProps = {
@@ -57,9 +62,16 @@ export const testAppDefaultProps = {
   testClockDate: new Date(2022, 11, 25),
   jokes: getJokes(),
   users: getUsers(),
-} satisfies Partial<TestAppProps>;
+} satisfies Partial<TestAppStoryProps>;
 
-export function TestApp({
+/**
+ * This component is mainly used to map storybook controls to the TestApp
+ * Using unions of string literals so that you can easily select an option.
+ * And also making sure that event emit plain javascript objects to inspect this in the action panel.
+ *
+ * This could have been a decorator as well, but then storybook won't auto generate docs and controls for it.
+ */
+export function TestAppStory({
   url,
   loggedInUser,
   jokes,
@@ -73,18 +85,70 @@ export function TestApp({
   onResponse,
   clock,
   testClockDate,
-}: TestAppProps) {
-  const dataModel = dmmf.datamodel as Prisma.DMMF.Datamodel;
+}: TestAppStoryProps) {
   const testLayer = createTestLayer({ clock: clock === "test" ? new TestClock(testClockDate) : new LiveClock() });
+  const dataModel = dmmf.datamodel as Prisma.DMMF.Datamodel;
   const ctx = createTestContext({
     db: createPrismaMock(dataModel, {
-      onMutate,
-      onQuery,
       data: createSeedData({ jokes, users }),
       ...testLayer,
     }),
   });
 
+  return (
+    <TestApp
+      url={url}
+      delay={connection === "super fast" ? 0 : connection === "fast" ? 100 : connection === "slow" ? 500 : 1000}
+      username={loggedInUser === "none" ? undefined : loggedInUser}
+      ctx={ctx}
+      onLocationChanged={onLocationChanged}
+      onCookieSet={onCookieSet}
+      onResponse={(response) =>
+        onResponse({
+          headers: Object.fromEntries(response.headers),
+          status: response.status,
+          statusText: response.statusText,
+        })
+      }
+      onRequest={(request) =>
+        onRequest({ method: request.method, url: request.url, headers: Object.fromEntries(request.headers) })
+      }
+      onDbAction={(params) => {
+        const event = params.action.includes("find") || params.action === "count" ? onQuery : onMutate;
+        event({
+          model: params.model,
+          action: params.action,
+          ...params.args,
+          // TODO use seperate event for tracking the data of the database
+          // @ts-ignore
+          db: params.db,
+        });
+      }}
+    />
+  );
+}
+
+export function TestApp({
+  url,
+  ctx,
+  username,
+  delay = 0,
+  onLocationChanged,
+  onCookieSet,
+  onRequest,
+  onResponse,
+  onDbAction,
+}: {
+  url: string;
+  username?: string;
+  delay?: number;
+  ctx: TestContext;
+  onLocationChanged(location: Location): void;
+  onCookieSet(data: SessionData & { cookie: string; expires: Date }): void;
+  onRequest(request: Request): void;
+  onResponse(response: Response): void;
+  onDbAction(params: Prisma.MiddlewareParams): void;
+}) {
   const cookieRef = useRef<{ cookie: string; expires: Date; options: Record<string, string> } | undefined>();
 
   async function setCookie(cookieHeader: string) {
@@ -92,61 +156,49 @@ export function TestApp({
     const options = Object.fromEntries(rawOptions.map((it) => it.split("=")));
     const expires =
       typeof options["Max-Age"] !== "undefined"
-        ? new Date(testLayer.clock.now().getTime() + options["Max-Age"] * 1000)
+        ? new Date(ctx.testLayer.clock.now().getTime() + options["Max-Age"] * 1000)
         : new Date(options["Expires"]);
     cookieRef.current = { cookie, expires, options: options };
     const session = await ctx.sessionStorage.getSession(cookie);
     onCookieSet({ cookie, expires, ...session.data, ...options });
   }
 
-  const withMiddleware =
-    (fn: LoaderFunction | ActionFunction) => async (args: LoaderFunctionArgs | ActionFunctionArgs) => {
-      if ((onCookieSet as jest.Mock).mock.calls.length === 0) {
-        if (loggedInUser !== "none") {
-          const user = await ctx.db.user.findUnique({ where: { username: loggedInUser } });
-          if (user) {
-            const session = await ctx.sessionStorage.getSession();
-            session.set("userId", user.id);
-            await setCookie(await ctx.sessionStorage.commitSession(session));
-          }
-        } else {
-          cookieRef.current = undefined;
-        }
-      }
+  type DataFunction = LoaderFunction | ActionFunction;
+  type DataFunctionArgs = LoaderFunctionArgs | ActionFunctionArgs;
 
-      if (cookieRef.current && cookieRef.current.expires < testLayer.clock.now()) {
-        console.log("Cookie expired");
+  const withMiddleware = (fn: DataFunction) => async (args: DataFunctionArgs) => {
+    if ((onCookieSet as jest.Mock).mock.calls.length === 0) {
+      const user = username == null ? null : await ctx.db.user.findUnique({ where: { username } });
+      if (user != null) {
+        const session = await ctx.sessionStorage.getSession();
+        session.set("userId", user.id);
+        await setCookie(await ctx.sessionStorage.commitSession(session));
+      } else {
         cookieRef.current = undefined;
       }
+    }
 
-      if (cookieRef.current) {
-        args.request.headers.set(`${cookieKey}`, cookieRef.current.cookie);
-      }
+    if (cookieRef.current && cookieRef.current.expires < ctx.testLayer.clock.now()) {
+      console.log("Cookie expired");
+      cookieRef.current = undefined;
+    }
 
-      onRequest({
-        method: args.request.method,
-        url: args.request.url,
-        headers: Object.fromEntries(args.request.headers),
-      });
+    if (cookieRef.current) args.request.headers.set(`${cookieKey}`, cookieRef.current.cookie);
 
-      const response = await fn({ ...args, context: ctx });
+    onRequest(args.request);
 
-      if (connection !== "super fast") {
-        await sleep(connection === "fast" ? 100 : connection === "slow" ? 500 : 1000);
-      }
+    await sleep(0);
+    const response = await fn({ ...args, context: ctx });
+    await sleep(delay);
 
-      if (response instanceof Response) {
-        onResponse({
-          headers: Object.fromEntries(response.headers),
-          status: response.status,
-          statusText: response.statusText,
-        });
-        const newCookie = response.headers.get(`Set-${cookieKey}`);
-        if (newCookie != null) await setCookie(newCookie);
-      }
+    if (response instanceof Response) {
+      onResponse(response);
+      const newCookie = response.headers.get(`Set-${cookieKey}`);
+      if (newCookie != null) await setCookie(newCookie);
+    }
 
-      return response;
-    };
+    return response;
+  };
 
   const router = createMemoryRouter(
     [
@@ -191,6 +243,13 @@ export function TestApp({
       initialEntries: [url],
     }
   );
+
+  useEffect(() => {
+    ctx.db.$use((params, next) => {
+      onDbAction(params);
+      return next(params);
+    });
+  }, [ctx, onDbAction]);
 
   useEffect(() => {
     return router.subscribe(({ location, navigation }) => {

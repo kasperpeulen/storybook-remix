@@ -1,18 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { TestApp, testAppDefaultProps } from "~/test/TestApp";
+import { TestAppStory, testAppDefaultProps } from "~/test/TestApp";
 import { userEvent, within } from "@storybook/testing-library";
 import { Valid as NewValidJoke } from "~/routes/jokes/new.stories";
 import type { PlayContext } from "~/test/utils/storybook";
 
 const meta = {
   title: "Login",
-  component: TestApp,
+  component: TestAppStory,
   args: {
     ...testAppDefaultProps,
     url: "/login",
     loggedInUser: "none",
   },
-} satisfies Meta<typeof TestApp>;
+} satisfies Meta<typeof TestAppStory>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
