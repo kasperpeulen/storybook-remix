@@ -7,12 +7,14 @@ import { createTestLayer } from "~/test/context/test-layer";
 import { TestRandom } from "../utils/random";
 import { createTestCookieSessionStorage } from "~/test/utils/testCookieStorage";
 
-export function createTestContext({ db, random, sessionStorage }: Partial<Context> = {}): Context &
-  Record<string, unknown> {
+export type TestContext = ReturnType<typeof createTestContext>;
+
+export function createTestContext({ db, random, sessionStorage }: Partial<Context> = {}) {
   const testLayer = createTestLayer();
   const datamodel = json.datamodel as Prisma.DMMF.Datamodel;
 
   return {
+    testLayer,
     db: db ?? createPrismaMock(datamodel, { data: createSeedData(), ...testLayer }),
     random: random ?? new TestRandom(),
     sessionStorage:
@@ -26,5 +28,5 @@ export function createTestContext({ db, random, sessionStorage }: Partial<Contex
           httpOnly: true,
         },
       }),
-  };
+  } satisfies Context & Record<string, unknown>;
 }

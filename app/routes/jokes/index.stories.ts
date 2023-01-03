@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { TestApp, testAppDefaultProps } from "~/test/TestApp";
+import { TestAppStory, testAppDefaultProps } from "~/test/TestApp";
 import { userEvent, within } from "@storybook/testing-library";
 
 const meta = {
   title: "JokesIndexRoute",
-  component: TestApp,
+  component: TestAppStory,
   args: {
     ...testAppDefaultProps,
     url: "/jokes",
   },
-} satisfies Meta<typeof TestApp>;
+} satisfies Meta<typeof TestAppStory>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
