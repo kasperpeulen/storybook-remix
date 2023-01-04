@@ -4,36 +4,36 @@
  * pages!
  */
 
-body:has(.index),
-.docs-story:has(.index) {
+body,
+.docs-story {
   background-image: var(--gradient-background);
 }
 
-.index.container {
+.container {
   min-height: inherit;
 }
 
-.index.container,
-.index .content {
+.container,
+.content {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
-.index .content {
+.content {
   padding-top: 3rem;
   padding-bottom: 3rem;
 }
 
-.index h1 {
+h1 {
   margin: 0;
   text-shadow: 0 3px 0 rgba(0, 0, 0, 0.75);
   text-align: center;
   line-height: 0.5;
 }
 
-.index h1 span {
+h1 span {
   display: block;
   font-size: 4.5rem;
   line-height: 1;
@@ -41,7 +41,7 @@ body:has(.index),
   text-shadow: 0 0.2em 0.5em rgba(0, 0, 0, 0.5), 0 5px 0 rgba(0, 0, 0, 0.75);
 }
 
-.index nav ul {
+nav ul {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -52,24 +52,24 @@ body:has(.index),
   line-height: 1;
 }
 
-.index nav ul a:hover {
+nav ul a:hover {
   text-decoration-style: wavy;
   text-decoration-thickness: 1px;
 }
 
 @media print, (min-width: 640px) {
-  .index h1 span {
+  h1 span {
     font-size: 6rem;
   }
 
-  .index nav ul {
+  nav ul {
     font-size: 1.25rem;
     gap: 1.5rem;
   }
 }
 
 @media screen and (min-width: 1024px) {
-  .index h1 span {
+  h1 span {
     font-size: 8rem;
   }
 }

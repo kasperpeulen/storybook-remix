@@ -4,7 +4,7 @@ import { json } from "@remix-run/server-runtime";
 import { Form, Link, Outlet, useLoaderData } from "@remix-run/react";
 
 import { getUser } from "~/utils/session";
-import stylesUrl from "~/styles/jokes.css";
+import stylesUrl from "../styles/jokes.css?url";
 
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: stylesUrl }];
 
