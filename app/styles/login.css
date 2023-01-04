@@ -2,27 +2,26 @@
  * when the user visits this page, this style will apply, when they leave, it
  * will get unloaded, so don't worry so much about conflicting styles between
  * pages!
- *
- * Not true yet when mocking remix with react router, so added a login class
  */
 
-body:has(.login) .docs-story:has(.login) {
+body,
+.docs-story {
   background-image: var(--gradient-background);
 }
 
-.login.container {
+.container {
   min-height: inherit;
 }
 
-.login.container,
-.login .content {
+.container,
+.content {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
-.login .content {
+.content {
   padding: 1rem;
   background-color: hsl(0, 0%, 100%);
   border-radius: 5px;
@@ -32,26 +31,26 @@ body:has(.login) .docs-story:has(.login) {
 }
 
 @media print, (min-width: 640px) {
-  .login .content {
+  .content {
     padding: 2rem;
     border-radius: 8px;
   }
 }
 
-.login h1 {
+h1 {
   margin-top: 0;
 }
 
-.login fieldset {
+fieldset {
   display: flex;
   justify-content: center;
 }
 
-.login fieldset > :not(:last-child) {
+fieldset > :not(:last-child) {
   margin-right: 2rem;
 }
 
-.login .links ul {
+.links ul {
   margin-top: 1rem;
   padding: 0;
   list-style: none;
@@ -60,7 +59,7 @@ body:has(.login) .docs-story:has(.login) {
   align-items: center;
 }
 
-.login .links a:hover {
+.links a:hover {
   text-decoration-style: wavy;
   text-decoration-thickness: 1px;
 }

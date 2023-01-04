@@ -1,7 +1,7 @@
 import type { ActionArgs, LinksFunction } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 
-import stylesUrl from "~/styles/login.css";
+import stylesUrl from "../styles/login.css?url";
 import { badRequest } from "~/utils/request";
 import { createUserSession, login, register } from "~/utils/session";
 
