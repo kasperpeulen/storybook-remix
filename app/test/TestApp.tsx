@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, Location } from "@remix-run/router";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import IndexRoute, { links as indexLinks } from "~/routes";
-import JokesRoute, { loader as jokesLoader, links as jokesLinks } from "~/routes/jokes";
+import JokesRoute, { links as jokesLinks, loader as jokesLoader } from "~/routes/jokes";
 import JokesIndexRoute, { loader as jokesIndexLoader } from "~/routes/jokes/index";
 import NewJokeRoute, { action as newJokeAction } from "~/routes/jokes/new";
 import JokeRoute, { ErrorBoundary, loader as jokeLoader } from "~/routes/jokes/$jokeId";
@@ -10,8 +10,9 @@ import { createTestContext } from "~/test/context/context";
 import type { Prisma } from "@prisma/client";
 import { createPrismaMock } from "~/test/utils/prisma-mock";
 import dmmf from "../../prisma/dmmf.json";
+import * as React from "react";
 import { useEffect, useRef } from "react";
-import type { ActionFunction, LoaderFunction, SessionData } from "@remix-run/node";
+import type { ActionFunction, LinksFunction, LoaderFunction, SessionData } from "@remix-run/node";
 import Login, { action as loginAction, links as loginLinks } from "~/routes/login";
 import { action as logoutAction } from "~/routes/logout";
 import { createSeedData } from "~/test/mocks/seed";
@@ -20,10 +21,9 @@ import { createTestLayer } from "~/test/context/test-layer";
 import { LiveClock, sleep, TestClock } from "./utils/clock";
 import { getJokes } from "~/test/mocks/jokes";
 import { getUsers } from "~/test/mocks/users";
-import type { LinksFunction } from "@remix-run/node";
 import { isPageLinkDescriptor } from "@remix-run/react/dist/links";
 import { PrefetchPageLinks } from "@remix-run/react";
-import * as React from "react";
+import { links } from "~/root";
 
 interface TestAppStoryProps {
   /**
@@ -281,6 +281,9 @@ export function TestApp({
 
   return (
     <>
+      {/* Loading root.tsx links */}
+      {<Links links={links} />}
+
       {/**
        * Preloading links as we mock Remix <link/>'s by running them in the body instead of the head with React Router.
        * This causes flashes of un styled content if not preloaded.
