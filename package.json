@@ -20,9 +20,9 @@
     "chromatic": "pnpx chromatic",
     "generate-dmmf": "node --require esbuild-register prisma/dmmf.ts",
     "seed": "node --require esbuild-register prisma/seed.ts && pnpm run generate-dmmf",
-    "test-storybook": "test-storybook",
-    "test-storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"pnpm run build-storybook --quiet && npx http-server storybook-static --port 6007 --silent\" \"wait-on http://127.0.0.1:6007 && pnpm run test-storybook --coverage --url http://127.0.0.1:6007\"",
-    "ci": "pnpm i && pnpm run prettier:check && pnpm run eslint && pnpm run typecheck && pnpm run test-storybook"
+    "test": "jest",
+    "test-storybook:ci": "concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"pnpm run build-storybook --quiet && npx http-server storybook-static --port 6007 --silent\" \"wait-on http://127.0.0.1:6007 && pnpm test-storybook --coverage --url http://127.0.0.1:6007\"",
+    "ci": "pnpm i && pnpm run prettier:check && pnpm run eslint && pnpm run typecheck"
   },
   "dependencies": {
     "@isbl/bcryptjs": "3.0.0-beta.1",
@@ -103,27 +103,6 @@
     "printWidth": 120,
     "plugins": [
       "prettier-plugin-prisma"
-    ]
-  },
-  "jest": {
-    "preset": "ts-jest/presets/default-esm",
-    "extensionsToTreatAsEsm": [
-      ".ts"
-    ],
-    "moduleNameMapper": {
-      "^(\\.{1,2}/.*)\\.js$": "$1"
-    },
-    "transform": {
-      "^.+\\.tsx?$": [
-        "ts-jest",
-        {
-          "useESM": true
-        }
-      ]
-    },
-    "testEnvironment": "node",
-    "roots": [
-      "<rootDir>/app"
     ]
   }
 }
