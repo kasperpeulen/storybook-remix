@@ -10,9 +10,6 @@ export const loader = (async ({ params, context: ctx }) => {
   if (!joke) {
     throw new Error("Joke not found");
   }
-  if (Math.random() > 2) {
-    throw new Error("Unreachable");
-  }
   return json({ joke });
 }) satisfies LoaderFunction;
 
