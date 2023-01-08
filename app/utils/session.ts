@@ -1,6 +1,6 @@
 import * as bcrypt from "@isbl/bcryptjs";
 import { redirect } from "@remix-run/server-runtime";
-import type { Context } from "~/context/context";
+import type { Context } from "~/context";
 
 type LoginForm = {
   username: string;

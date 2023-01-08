@@ -3,7 +3,7 @@ import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
-import { createLiveContext } from "./app/context/live-context";
+import { createLiveContext } from "~/context";
 
 const BUILD_DIR = path.join(process.cwd(), "build");
 
