@@ -6,7 +6,6 @@ const { reporters, watchPlugins, ...config } = getJestConfig();
 
 export default {
   ...config,
-  preset: "ts-jest",
   testMatch: ["<rootDir>/app/**/*.stories.*"],
-  setupFilesAfterEnv: ["jest-playwright-istanbul/lib/setup"],
+  setupFilesAfterEnv: [...config.setupFilesAfterEnv, "jest-playwright-istanbul/lib/setup"],
 } satisfies Config;
