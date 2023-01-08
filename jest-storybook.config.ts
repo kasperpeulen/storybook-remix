@@ -1,11 +1,12 @@
 import type { Config } from "jest";
-import { getJestConfig } from "@storybook/test-runner";
-
-// removing reporters as jest give validation errors, as they need to be in the root jest config it seems
-const { reporters, watchPlugins, ...config } = getJestConfig();
 
 export default {
-  ...config,
   testMatch: ["<rootDir>/app/**/*.stories.*"],
-  setupFilesAfterEnv: [...config.setupFilesAfterEnv, "jest-playwright-istanbul/lib/setup"],
+  preset: "jest-playwright-preset",
+  transform: {
+    "^.+\\.stories\\.[jt]sx?$": "@storybook/test-runner/playwright/transform",
+    "^.+\\.[jt]sx?$": "ts-jest",
+  },
+  testEnvironment: "@storybook/test-runner/playwright/custom-environment.js",
+  setupFilesAfterEnv: ["jest-playwright-istanbul/lib/setup", "@storybook/test-runner/playwright/jest-setup.js"],
 } satisfies Config;

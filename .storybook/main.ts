@@ -1,10 +1,8 @@
-const path = require("node:path");
-
+import path from "node:path";
 // TODO somehow the test runner crashes in github actions when this is in TS and module syntax
 // But not locally, very weird
 
-/** @type {import('@storybook/react-vite').StorybookConfig} */
-module.exports = {
+export default {
   stories: ["../app/**/*.stories.@(js|jsx|ts|tsx)"],
   addons: [
     "@storybook/addon-links",
