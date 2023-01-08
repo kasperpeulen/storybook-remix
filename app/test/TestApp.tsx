@@ -88,10 +88,12 @@ export function TestAppStory({
   clock,
   testClockDate,
 }: TestAppStoryProps) {
-  const testLayer = createTestLayer({ clock: clock === "test" ? new TestClock(testClockDate) : new LiveClock() });
-  const dataModel = dmmf.datamodel as Prisma.DMMF.Datamodel;
+  const testLayer = createTestLayer({
+    clock: clock === "test" ? new TestClock(testClockDate) : new LiveClock(),
+  });
   const ctx = createTestContext({
-    db: createPrismaMock(dataModel, {
+    ...testLayer,
+    db: createPrismaMock(dmmf.datamodel as Prisma.DMMF.Datamodel, {
       data: createSeedData({ jokes, users }),
       ...testLayer,
     }),

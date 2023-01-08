@@ -12,12 +12,19 @@ import { UuidV5Generator } from "~/test/utils/id-generator";
 
 export type TestContext = ReturnType<typeof createTestContext>;
 
-export function createTestContext({ db, random, sessionStorage }: Partial<Context> = {}) {
+export function createTestContext({
+  db,
+  random,
+  sessionStorage,
+  clock,
+  idGenerator,
+}: Partial<Context> & Partial<TestLayer> = {}) {
   const testLayer = createTestLayer();
   const datamodel = json.datamodel as Prisma.DMMF.Datamodel;
 
   return {
-    ...testLayer,
+    clock: clock ?? testLayer.clock,
+    idGenerator: idGenerator ?? testLayer.idGenerator,
     db: db ?? createPrismaMock(datamodel, { data: createSeedData(), ...testLayer }),
     random: random ?? new TestRandom(),
     sessionStorage:
