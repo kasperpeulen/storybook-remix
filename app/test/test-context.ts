@@ -20,12 +20,10 @@ export function createTestContext({
   idGenerator,
 }: Partial<Context> & Partial<TestLayer> = {}) {
   const testLayer = createTestLayer();
-  const datamodel = json.datamodel as Prisma.DMMF.Datamodel;
-
   return {
     clock: clock ?? testLayer.clock,
     idGenerator: idGenerator ?? testLayer.idGenerator,
-    db: db ?? createPrismaMock(datamodel, { data: createSeedData(), ...testLayer }),
+    db: db ?? createPrismaMock(json.datamodel as Prisma.DMMF.Datamodel, { data: createSeedData(), ...testLayer }),
     random: random ?? new TestRandom(),
     sessionStorage:
       sessionStorage ??

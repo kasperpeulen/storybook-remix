@@ -24,8 +24,8 @@
     "generate-dmmf": "node --require esbuild-register prisma/dmmf.ts",
     "seed": "node --require esbuild-register prisma/seed.ts && pnpm run generate-dmmf",
     "test": "jest",
-    "test:coverage": "pnpm run test --coverage",
-    "test:ci": "concurrently -k -s first -n \"sb,test\" -c \"cyan,blue\" \"pnpm run storybook:serve:coverage --silent\" \"wait-on http://127.0.0.1:6007 && TARGET_URL=http://127.0.0.1:6007 pnpm run test:coverage\"",
+    "test:coverage": "TARGET_URL=http://127.0.0.1:6007 pnpm run test --coverage",
+    "test:ci": "concurrently -k -s first -n \"sb,test\" -c \"cyan,blue\" \"pnpm run storybook:serve:coverage --silent\" \"wait-on http://127.0.0.1:6007 && pnpm run test:coverage\"",
     "ci": "pnpm i && pnpm run prettier:write && pnpm run eslint && pnpm run typecheck"
   },
   "dependencies": {
