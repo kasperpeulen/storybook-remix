@@ -6,8 +6,8 @@ import Login, { action as loginAction, links as loginLinks } from "~/routes/logi
 import JokesIndexRoute, { loader as jokesIndexLoader } from "~/routes/jokes/index";
 import NewJokeRoute, { action as newJokeAction } from "~/routes/jokes/new";
 import JokeRoute, { ErrorBoundary, loader as jokeLoader } from "~/routes/jokes/$jokeId";
-import type { TestContext } from "~/test/context/context";
-import { createTestContext } from "~/test/context/context";
+import type { TestContext } from "~/test/test-context";
+import { createTestContext, createTestLayer } from "~/test/test-context";
 import type { Prisma } from "@prisma/client";
 import { createPrismaMock } from "~/test/utils/prisma-mock";
 import dmmf from "../../prisma/dmmf.json";
@@ -17,7 +17,6 @@ import type { ActionFunction, LinksFunction, LoaderFunction, SessionData } from 
 import { action as logoutAction } from "~/routes/logout";
 import { createSeedData } from "~/test/mocks/seed";
 import { cookieKey } from "~/utils/session";
-import { createTestLayer } from "~/test/context/test-layer";
 import { LiveClock, sleep, TestClock } from "./utils/clock";
 import { getJokes } from "~/test/mocks/jokes";
 import { getUsers } from "~/test/mocks/users";
@@ -159,7 +158,7 @@ export function TestApp({
     const options = Object.fromEntries(rawOptions.map((it) => it.split("=")));
     const expires =
       typeof options["Max-Age"] !== "undefined"
-        ? new Date(ctx.testLayer.clock.now().getTime() + options["Max-Age"] * 1000)
+        ? new Date(ctx.clock.now().getTime() + options["Max-Age"] * 1000)
         : new Date(options["Expires"]);
     cookieRef.current = { cookie, expires, options: options };
     const session = await ctx.sessionStorage.getSession(cookie);
@@ -181,7 +180,7 @@ export function TestApp({
       }
     }
 
-    if (cookieRef.current && cookieRef.current.expires < ctx.testLayer.clock.now()) {
+    if (cookieRef.current && cookieRef.current.expires < ctx.clock.now()) {
       console.log("Cookie expired");
       cookieRef.current = undefined;
     }

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { TestAppStory, testAppDefaultProps } from "~/test/TestApp";
 import { v5 } from "uuid";
-import { uuidNamespace } from "~/test/context/test-layer";
+import { uuidNamespace } from "~/test/test-context";
 
 const meta = {
   title: "JokeRoute",
