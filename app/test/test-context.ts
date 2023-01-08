@@ -9,6 +9,7 @@ import type { Clock } from "~/test/utils/clock";
 import { TestClock } from "~/test/utils/clock";
 import type { IdGenerator } from "~/test/utils/id-generator";
 import { UuidV5Generator } from "~/test/utils/id-generator";
+import { createCookieOptions } from "~/context/cookie";
 
 export type TestContext = ReturnType<typeof createTestContext>;
 
@@ -28,13 +29,9 @@ export function createTestContext({
     sessionStorage:
       sessionStorage ??
       createTestCookieSessionStorage({
-        cookie: {
-          name: "RJ_session",
-          secure: false,
-          secrets: ["secret"],
-          maxAge: 60 * 60 * 24 * 30,
-          httpOnly: true,
-        },
+        cookie: createCookieOptions({
+          secrets: ["test"],
+        }),
       }),
   } satisfies Context & Record<string, unknown>;
 }
