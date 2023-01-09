@@ -9,4 +9,6 @@ export default {
   projects: ["<rootDir>/jest-unit.config.ts", "<rootDir>/jest-storybook.config.ts"],
   reporters: ["default", "jest-playwright-istanbul/lib/reporter"],
   watchPlugins: getJestConfig().watchPlugins,
+  coverageReporters: ["json", "text", "lcov"],
+  collectCoverageFrom: ["app/**/*", "!app/test/**/*"],
 } satisfies Config;

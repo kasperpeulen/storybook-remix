@@ -9,6 +9,7 @@ import type { Clock } from "~/test/utils/clock";
 import { TestClock } from "~/test/utils/clock";
 import type { IdGenerator } from "~/test/utils/id-generator";
 import { UuidV5Generator } from "~/test/utils/id-generator";
+import { createCookieOptions } from "~/context/cookie";
 
 export type TestContext = ReturnType<typeof createTestContext>;
 
@@ -20,23 +21,17 @@ export function createTestContext({
   idGenerator,
 }: Partial<Context> & Partial<TestLayer> = {}) {
   const testLayer = createTestLayer();
-  const datamodel = json.datamodel as Prisma.DMMF.Datamodel;
-
   return {
     clock: clock ?? testLayer.clock,
     idGenerator: idGenerator ?? testLayer.idGenerator,
-    db: db ?? createPrismaMock(datamodel, { data: createSeedData(), ...testLayer }),
+    db: db ?? createPrismaMock(json.datamodel as Prisma.DMMF.Datamodel, { data: createSeedData(), ...testLayer }),
     random: random ?? new TestRandom(),
     sessionStorage:
       sessionStorage ??
       createTestCookieSessionStorage({
-        cookie: {
-          name: "RJ_session",
-          secure: false,
-          secrets: ["secret"],
-          maxAge: 60 * 60 * 24 * 30,
-          httpOnly: true,
-        },
+        cookie: createCookieOptions({
+          secrets: ["test"],
+        }),
       }),
   } satisfies Context & Record<string, unknown>;
 }
