@@ -1,10 +1,19 @@
-import type { ActionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/server-runtime";
-import { Form, useActionData } from "@remix-run/react";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/server-runtime";
+import { Form, Link, useActionData, useTransition } from "@remix-run/react";
+import { useCatch } from "@remix-run/react/dist/errorBoundaries";
 
+import { JokeDisplay } from "~/components/JokeDisplay";
 import { badRequest } from "~/utils/request";
-import { requireUserId } from "~/utils/session";
-import { invariant } from "@remix-run/router";
+import { getUserId, requireUserId } from "~/utils/session";
+
+export const loader = async ({ request, context: ctx }: LoaderArgs) => {
+  const userId = await getUserId(ctx, request);
+  if (!userId) {
+    throw new Response("Unauthorized", { status: 401 });
+  }
+  return json({});
+};
 
 function validateJokeContent(content: string) {
   if (content.length < 10) {
@@ -21,10 +30,17 @@ function validateJokeName(name: string) {
 export const action = async ({ request, context: ctx }: ActionArgs) => {
   const { db } = ctx;
   const userId = await requireUserId(ctx, request);
+
   const form = await request.formData();
   const name = form.get("name");
   const content = form.get("content");
-  invariant(typeof name === "string" && typeof content === "string");
+  if (typeof name !== "string" || typeof content !== "string") {
+    return badRequest({
+      fieldErrors: null,
+      fields: null,
+      formError: `Form not submitted correctly.`,
+    });
+  }
 
   const fieldErrors = {
     name: validateJokeName(name),
@@ -32,26 +48,36 @@ export const action = async ({ request, context: ctx }: ActionArgs) => {
   };
   const fields = { name, content };
   if (Object.values(fieldErrors).some(Boolean)) {
-    return badRequest({
-      fieldErrors,
-      fields,
-      formError: null,
-    });
+    return badRequest({ fieldErrors, fields, formError: null });
   }
 
   const joke = await db.joke.create({
     data: { ...fields, jokesterId: userId },
   });
-  return redirect(`/jokes/${joke.id}`);
+  return redirect(`/jokes/${joke.id}?redirectTo=/jokes/new`);
 };
 
 export default function NewJokeRoute() {
   const actionData = useActionData<typeof action>();
+  const transition = useTransition();
+
+  if (transition.submission) {
+    const name = transition.submission.formData.get("name");
+    const content = transition.submission.formData.get("content");
+    if (
+      typeof name === "string" &&
+      typeof content === "string" &&
+      !validateJokeContent(content) &&
+      !validateJokeName(name)
+    ) {
+      return <JokeDisplay joke={{ name, content }} isOwner={true} canDelete={false} />;
+    }
+  }
 
   return (
     <div>
       <p>Add your own hilarious joke</p>
-      <Form method="post">
+      <Form method="post" aria-label="form">
         <div>
           <label>
             Name:{" "}
@@ -59,7 +85,7 @@ export default function NewJokeRoute() {
               type="text"
               defaultValue={actionData?.fields?.name}
               name="name"
-              aria-invalid={Boolean(actionData?.fieldErrors?.name) || undefined}
+              aria-invalid={Boolean(actionData?.fieldErrors?.name)}
               aria-errormessage={actionData?.fieldErrors?.name ? "name-error" : undefined}
             />
           </label>
@@ -75,7 +101,7 @@ export default function NewJokeRoute() {
             <textarea
               defaultValue={actionData?.fields?.content}
               name="content"
-              aria-invalid={Boolean(actionData?.fieldErrors?.content) || undefined}
+              aria-invalid={Boolean(actionData?.fieldErrors?.content)}
               aria-errormessage={actionData?.fieldErrors?.content ? "content-error" : undefined}
             />
           </label>
@@ -98,4 +124,23 @@ export default function NewJokeRoute() {
       </Form>
     </div>
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+
+  if (caught.status === 401) {
+    return (
+      <div className="error-container">
+        <p>You must be logged in to create a joke.</p>
+        <Link to="/login?redirectTo=/jokes/new">Login</Link>
+      </div>
+    );
+  }
+  throw new Error(`Unexpected caught response with status: ${caught.status}`);
+}
+
+export function ErrorBoundary({ error }: { error: Error }) {
+  console.error(error);
+  return <div>Something unexpected went wrong. Sorry about that.</div>;
 }

@@ -10,6 +10,7 @@ export function getJokes(): Prisma.JokeUncheckedCreateInput[] {
     {
       name: "Frisbee",
       content: `I was wondering why the frisbee was getting bigger, then it hit me.`,
+      jokesterId: "39cffd21-7933-56e4-9d9c-1afeda9d5906",
     },
     {
       name: "Trees",
@@ -31,5 +32,7 @@ export function getJokes(): Prisma.JokeUncheckedCreateInput[] {
       name: "Elevator",
       content: `My first time using an elevator was an uplifting experience. The second time let me down.`,
     },
-  ].map((joke) => ({ ...joke, jokesterId: "1" }));
+  ].map((joke) => {
+    return { ...joke, jokesterId: joke.jokesterId ? joke.jokesterId : "7efda802-d7d1-5d76-97d6-cc16a9f3e357" };
+  });
 }

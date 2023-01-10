@@ -9,7 +9,7 @@ import type { Clock } from "~/test/utils/clock";
 import { TestClock } from "~/test/utils/clock";
 import type { IdGenerator } from "~/test/utils/id-generator";
 import { UuidV5Generator } from "~/test/utils/id-generator";
-import { createCookieOptions } from "~/context/cookie";
+import { createCookieOptions } from "~/utils/session";
 
 export type TestContext = ReturnType<typeof createTestContext>;
 

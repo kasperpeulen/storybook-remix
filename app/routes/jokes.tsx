@@ -1,26 +1,26 @@
-import type { LoaderFunction } from "@remix-run/node";
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/server-runtime";
 import { Form, Link, Outlet, useLoaderData } from "@remix-run/react";
 
 import { getUser } from "~/utils/session";
 import stylesUrl from "../styles/jokes.css?url";
 
-export const links: LinksFunction = () => [{ rel: "stylesheet", href: stylesUrl }];
-
-export const loader = (async ({ request, context: ctx }) => {
+export const loader = async ({ request, context: ctx }: LoaderArgs) => {
   const { db } = ctx;
-  const jokeListItems = await db.joke.findMany({
-    take: 5,
-    orderBy: { createdAt: "desc" },
-    select: { id: true, name: true },
-  });
   const user = await getUser(ctx, request);
 
-  return json({ jokeListItems, user });
-}) satisfies LoaderFunction;
+  const jokeListItems = await db.joke.findMany({
+    take: 5,
+    select: { id: true, name: true },
+    orderBy: { createdAt: "desc" },
+  });
 
-export default function JokesRoute() {
+  return json({ jokeListItems, user });
+};
+
+export const links: LinksFunction = () => [{ rel: "stylesheet", href: stylesUrl }];
+
+export default function JokesScreen() {
   const data = useLoaderData<typeof loader>();
 
   return (
@@ -53,9 +53,9 @@ export default function JokesRoute() {
             <Link to=".">Get a random joke</Link>
             <p>Here are a few more jokes to check out:</p>
             <ul>
-              {data.jokeListItems.map((joke) => (
-                <li key={joke.id}>
-                  <Link to={joke.id}>{joke.name}</Link>
+              {data.jokeListItems?.map(({ id, name }) => (
+                <li key={id}>
+                  <Link to={id} /* not supported yet in React Router prefetch="intent" */>{name}</Link>
                 </li>
               ))}
             </ul>

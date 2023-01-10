@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { TestAppStory, testAppDefaultProps } from "~/test/TestApp";
 
 const meta = {
-  title: "IndexRoute",
+  title: "routes/index",
   component: TestAppStory,
   args: {
     ...testAppDefaultProps,

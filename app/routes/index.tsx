@@ -3,11 +3,13 @@ import { Link } from "@remix-run/react";
 
 import stylesUrl from "../styles/index.css?url";
 
-export const links: LinksFunction = () => [{ rel: "stylesheet", href: stylesUrl }];
+export const links: LinksFunction = () => {
+  return [{ rel: "stylesheet", href: stylesUrl }];
+};
 
-export default function IndexRoute() {
+export default function Index() {
   return (
-    <div className="index container">
+    <div className="container">
       <div className="content">
         <h1>
           Remix <span>Jokes!</span>
