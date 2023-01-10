@@ -1,8 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 import type { Random } from "~/context/random";
 import type { SessionStorage } from "@remix-run/node";
 import { createCookieSessionStorage } from "@remix-run/node";
-import { createCookieOptions } from "~/context/cookie";
+import { createDb } from "~/utils/db.server";
+import { createCookieOptions } from "~/utils/session";
 
 export interface Context {
   db: PrismaClient;
@@ -15,7 +16,7 @@ export function createLiveContext(): Context & Record<string, unknown> {
   if (!sessionSecret) throw new Error("SESSION_SECRET must be set");
 
   return {
-    db: new PrismaClient(),
+    db: createDb(),
     random: { getNumber: Math.random },
     sessionStorage: createCookieSessionStorage({ cookie: createCookieOptions({ secrets: [sessionSecret] }) }),
   };

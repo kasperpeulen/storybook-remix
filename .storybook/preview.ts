@@ -1,5 +1,5 @@
 import { Loader, Parameters } from "@storybook/react";
-import { LinkDescriptor } from "@remix-run/node";
+import type { LinkDescriptor } from "@remix-run/node";
 import { links } from "~/root";
 import { links as indexLinks } from "~/routes";
 import { links as jokesLinks } from "~/routes/jokes";

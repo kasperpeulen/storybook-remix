@@ -20,7 +20,7 @@ function validatePassword(password: unknown) {
 }
 
 function validateUrl(url: string) {
-  let urls = ["/jokes", "/", "https://remix.run"];
+  const urls = ["/jokes", "/jokes/new", "/", "https://remix.run"];
   if (urls.includes(url)) {
     return url;
   }
@@ -54,11 +54,7 @@ export const action = async ({ request, context: ctx }: ActionArgs) => {
     password: validatePassword(password),
   };
   if (Object.values(fieldErrors).some(Boolean)) {
-    return badRequest({
-      fieldErrors,
-      fields,
-      formError: null,
-    });
+    return badRequest({ fieldErrors, fields, formError: null });
   }
 
   switch (loginType) {
@@ -74,9 +70,7 @@ export const action = async ({ request, context: ctx }: ActionArgs) => {
       return createUserSession(ctx, user.id, redirectTo);
     }
     case "register": {
-      const userExists = await db.user.findFirst({
-        where: { username },
-      });
+      const userExists = await db.user.findFirst({ where: { username } });
       if (userExists) {
         return badRequest({
           fieldErrors: null,
@@ -108,10 +102,10 @@ export default function Login() {
   const actionData = useActionData<typeof action>();
   const [searchParams] = useSearchParams();
   return (
-    <div className="login container">
+    <div className="container">
       <div className="content" data-light="">
         <h1>Login</h1>
-        <Form method="post">
+        <Form method="post" aria-label="form">
           <input type="hidden" name="redirectTo" value={searchParams.get("redirectTo") ?? undefined} />
           <fieldset>
             <legend className="sr-only">Login or Register?</legend>
@@ -155,8 +149,8 @@ export default function Login() {
             <input
               id="password-input"
               name="password"
-              type="password"
               defaultValue={actionData?.fields?.password}
+              type="password"
               aria-invalid={Boolean(actionData?.fieldErrors?.password)}
               aria-errormessage={actionData?.fieldErrors?.password ? "password-error" : undefined}
             />

@@ -1,27 +1,25 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, Location } from "@remix-run/router";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
-import IndexRoute, { links as indexLinks } from "~/routes";
-import JokesRoute, { links as jokesLinks, loader as jokesLoader } from "~/routes/jokes";
-import Login, { action as loginAction, links as loginLinks } from "~/routes/login";
-import JokesIndexRoute, { loader as jokesIndexLoader } from "~/routes/jokes/index";
-import NewJokeRoute, { action as newJokeAction } from "~/routes/jokes/new";
-import JokeRoute, { ErrorBoundary, loader as jokeLoader } from "~/routes/jokes/$jokeId";
-import type { TestContext } from "~/test/test-context";
-import { createTestContext, createTestLayer } from "~/test/test-context";
 import type { Prisma } from "@prisma/client";
-import { createPrismaMock } from "~/test/utils/prisma-mock";
-import dmmf from "../../prisma/dmmf.json";
 import * as React from "react";
 import { useEffect, useRef } from "react";
-import type { ActionFunction, LinksFunction, LoaderFunction, SessionData } from "@remix-run/node";
-import { action as logoutAction } from "~/routes/logout";
+import type { ActionFunction, LoaderFunction, SessionData } from "@remix-run/node";
+import { RouterProvider } from "react-router-dom";
+
+import type { TestContext } from "~/test/test-context";
+import { createTestContext, createTestLayer } from "~/test/test-context";
+import { createPrismaMock } from "~/test/utils/prisma-mock";
 import { createSeedData } from "~/test/mocks/seed";
 import { cookieKey } from "~/utils/session";
 import { LiveClock, sleep, TestClock } from "./utils/clock";
 import { getJokes } from "~/test/mocks/jokes";
 import { getUsers } from "~/test/mocks/users";
-import { isPageLinkDescriptor } from "@remix-run/react/dist/links";
-import { PrefetchPageLinks } from "@remix-run/react";
+import dmmf from "../../prisma/dmmf.json";
+
+import { createTestRouter } from "~/test/router";
+import isChromatic from "chromatic";
+import type { PlayContext } from "~/test/utils/storybook";
+import type { Mock } from "jest-mock";
+import { json } from "@remix-run/server-runtime";
 
 interface TestAppStoryProps {
   /**
@@ -35,6 +33,8 @@ interface TestAppStoryProps {
   url: string;
   loggedInUser: "none" | "kody" | "mr.bean";
   connection: "super fast" | "fast" | "slow" | "super slow";
+  inputDelay: number;
+
   clock: "test" | "live";
   testClockDate: Date;
 
@@ -43,12 +43,13 @@ interface TestAppStoryProps {
 
   onLocationChanged(location: Location): void;
 
-  onQuery(event: DbEvent): void;
   onRequest(request: object): void;
   onResponse(response: object): void;
-  onMutate(event: DbEvent): void;
+  onDbQuery(event: DbEvent): void;
+  onDbMutate(event: DbEvent): void;
 
   onCookieSet(data: SessionData & { cookie: string; expires: Date }): void;
+  onContextCreated(context: TestContext): void;
 }
 
 export interface DbEvent {
@@ -60,6 +61,7 @@ export const testAppDefaultProps = {
   url: "/",
   loggedInUser: "kody",
   connection: "super fast",
+  inputDelay: isChromatic() || process.env.NODE_ENV === "test" ? 0 : 15,
   clock: "test",
   testClockDate: new Date(2022, 11, 25),
   jokes: getJokes(),
@@ -79,14 +81,15 @@ export function TestAppStory({
   jokes,
   users,
   onLocationChanged,
-  onQuery,
-  onMutate,
+  onDbQuery,
+  onDbMutate,
   onCookieSet,
   connection,
   onRequest,
   onResponse,
   clock,
   testClockDate,
+  onContextCreated,
 }: TestAppStoryProps) {
   const testLayer = createTestLayer({
     clock: clock === "test" ? new TestClock(testClockDate) : new LiveClock(),
@@ -98,6 +101,7 @@ export function TestAppStory({
       ...testLayer,
     }),
   });
+  onContextCreated(ctx);
 
   return (
     <TestApp
@@ -107,18 +111,27 @@ export function TestAppStory({
       ctx={ctx}
       onLocationChanged={onLocationChanged}
       onCookieSet={onCookieSet}
-      onResponse={(response) =>
+      onResponse={async (response) => {
+        const cloned = response.clone();
+        const statusText = cloned.statusText;
+        const status = cloned.status;
+        const headers = Object.fromEntries(cloned.headers);
+        // let body = await cloned.text();
+        // try {
+        //   body = JSON.parse(body);
+        // } catch (e) {}
         onResponse({
-          headers: Object.fromEntries(response.headers),
-          status: response.status,
-          statusText: response.statusText,
-        })
-      }
+          headers,
+          status,
+          statusText,
+          // body,
+        });
+      }}
       onRequest={(request) =>
         onRequest({ method: request.method, url: request.url, headers: Object.fromEntries(request.headers) })
       }
       onDbAction={(params) => {
-        const event = params.action.includes("find") || params.action === "count" ? onQuery : onMutate;
+        const event = params.action.includes("find") || params.action === "count" ? onDbQuery : onDbMutate;
         event({
           model: params.model,
           action: params.action,
@@ -192,7 +205,21 @@ export function TestApp({
     onRequest(args.request);
 
     await sleep(0);
-    const response = await fn({ ...args, context: ctx });
+    let response;
+    try {
+      response = await fn({ ...args, context: ctx });
+    } catch (e) {
+      let response;
+      if (e instanceof Response) {
+        response = e;
+      } else if (e instanceof Error) {
+        response = json({ message: e.message, stack: e.stack }, { status: 500 });
+      } else {
+        response = json({ message: typeof e === "string" ? e : "" }, { status: 500 });
+      }
+      onResponse(response);
+      throw response;
+    }
     await sleep(delay);
 
     if (response instanceof Response) {
@@ -204,64 +231,7 @@ export function TestApp({
     return response;
   };
 
-  const router = createMemoryRouter(
-    [
-      {
-        path: "/",
-        element: (
-          <>
-            <Links links={indexLinks} />
-            <IndexRoute />
-          </>
-        ),
-      },
-      {
-        path: "jokes",
-        loader: withMiddleware(jokesLoader),
-        element: (
-          <>
-            <Links links={jokesLinks} />
-            <JokesRoute />
-          </>
-        ),
-        children: [
-          {
-            index: true,
-            loader: withMiddleware(jokesIndexLoader),
-            element: <JokesIndexRoute />,
-          },
-          {
-            path: "new",
-            element: <NewJokeRoute />,
-            action: withMiddleware(newJokeAction),
-          },
-          {
-            path: ":jokeId",
-            loader: withMiddleware(jokeLoader),
-            element: <JokeRoute />,
-            errorElement: <ErrorBoundary />,
-          },
-        ],
-      },
-      {
-        path: "login",
-        element: (
-          <>
-            <Links links={loginLinks} />
-            <Login />
-          </>
-        ),
-        action: withMiddleware(loginAction),
-      },
-      {
-        path: "logout",
-        action: withMiddleware(logoutAction),
-      },
-    ],
-    {
-      initialEntries: [url],
-    }
-  );
+  const router = createTestRouter({ middleware: withMiddleware, url });
 
   useEffect(() => {
     ctx.db.$use((params, next) => {
@@ -279,51 +249,6 @@ export function TestApp({
   return <RouterProvider router={router} />;
 }
 
-export function Links({ links }: { links: LinksFunction }) {
-  return (
-    <>
-      {links().map((link) => {
-        // Copied from https://github.com/remix-run/remix/blob/main/packages/remix-react/components.tsx#L563-L600
-        if (isPageLinkDescriptor(link)) {
-          return <PrefetchPageLinks key={link.page} {...link} />;
-        }
-
-        let imageSrcSet: string | null = null;
-
-        // In React 17, <link imageSrcSet> and <link imageSizes> will warn
-        // because the DOM attributes aren't recognized, so users need to pass
-        // them in all lowercase to forward the attributes to the node without a
-        // warning. Normalize so that either property can be used in Remix.
-        if ("useId" in React) {
-          if (link.imagesrcset) {
-            link.imageSrcSet = imageSrcSet = link.imagesrcset;
-            delete link.imagesrcset;
-          }
-
-          if (link.imagesizes) {
-            link.imageSizes = link.imagesizes;
-            delete link.imagesizes;
-          }
-        } else {
-          if (link.imageSrcSet) {
-            link.imagesrcset = imageSrcSet = link.imageSrcSet;
-            delete link.imageSrcSet;
-          }
-
-          if (link.imageSizes) {
-            link.imagesizes = link.imageSizes;
-            delete link.imageSizes;
-          }
-        }
-
-        return (
-          <link
-            id={link.rel + (link.href || "") + (imageSrcSet || "")}
-            key={link.rel + (link.href || "") + (imageSrcSet || "")}
-            {...link}
-          />
-        );
-      })}
-    </>
-  );
+export function getTestContext(playContext: PlayContext) {
+  return (playContext.args.onContextCreated as Mock).mock.lastCall?.[0] as TestContext;
 }

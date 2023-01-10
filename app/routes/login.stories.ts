@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { TestAppStory, testAppDefaultProps } from "~/test/TestApp";
+import { testAppDefaultProps, TestAppStory } from "~/test/TestApp";
 import { userEvent, within } from "@storybook/testing-library";
 import { Valid as NewValidJoke } from "~/routes/jokes/new.stories";
 import type { PlayContext } from "~/test/utils/storybook";
 
 const meta = {
-  title: "Login",
+  title: "routes/login",
   component: TestAppStory,
   args: {
     ...testAppDefaultProps,
@@ -20,10 +20,11 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 
 async function login(ctx: PlayContext, name: string, password: string) {
-  const canvas = within(ctx.canvasElement);
+  const { args, canvasElement } = ctx;
+  const canvas = within(canvasElement);
 
-  await userEvent.type(await canvas.findByLabelText("Username"), name, { delay: 10 });
-  await userEvent.type(await canvas.findByLabelText("Password"), password, { delay: 10 });
+  await userEvent.type(await canvas.findByLabelText("Username"), name, { delay: args.inputDelay });
+  await userEvent.type(await canvas.findByLabelText("Password"), password, { delay: args.inputDelay });
   await userEvent.click(await canvas.findByRole("button", { name: /submit/i }));
 }
 
@@ -91,5 +92,22 @@ export const RegisterNewAccountAndPostJoke = {
     await userEvent.click(link);
 
     await NewValidJoke.play(context);
+  },
+} satisfies Story;
+
+export const LoginTypeInvalid = {
+  play: async (context) => {
+    const canvas = within(context.canvasElement);
+    const input = (await canvas.findByLabelText("Login")) as HTMLInputElement;
+    input.value = "rubbish";
+    await Login.play(context);
+  },
+} satisfies Story;
+
+export const FormNotSubmittedCorrectly = {
+  play: async (context) => {
+    const canvas = within(context.canvasElement);
+    (await canvas.findByLabelText("Password")).remove();
+    await userEvent.click(await canvas.findByRole("button", { name: /submit/i }));
   },
 } satisfies Story;

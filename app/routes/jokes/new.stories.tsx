@@ -1,12 +1,13 @@
+import type { jest } from "@storybook/jest";
 import { expect } from "@storybook/jest";
 import type { Meta, StoryObj } from "@storybook/react";
-import { TestAppStory, testAppDefaultProps } from "~/test/TestApp";
+import { getTestContext, testAppDefaultProps, TestAppStory } from "~/test/TestApp";
 import { userEvent, waitFor, within } from "@storybook/testing-library";
 import type { PlayContext } from "~/test/utils/storybook";
-import type { jest } from "@storybook/jest";
+import { Login } from "~/routes/login.stories";
 
 const meta = {
-  title: "NewJokeRoute",
+  title: "routes/new",
   component: TestAppStory,
   args: {
     ...testAppDefaultProps,
@@ -19,17 +20,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default = {} satisfies Story;
 
-async function postJoke({ canvasElement }: PlayContext, name: string, content: string) {
+async function postJoke({ canvasElement, args }: PlayContext, name: string, content: string) {
   const canvas = within(canvasElement);
 
-  const nameInput = await canvas.findByLabelText("Name:");
-  await userEvent.type(nameInput, name, { delay: 10 });
-
-  const contentInput = await canvas.findByLabelText("Content:");
-  await userEvent.type(contentInput, content, { delay: 10 });
-
-  const submitButton = await canvas.findByRole("button", { name: /add/i });
-  await userEvent.click(submitButton);
+  await userEvent.type(await canvas.findByLabelText("Name:"), name, { delay: args.inputDelay });
+  await userEvent.type(await canvas.findByLabelText("Content:"), content, { delay: args.inputDelay });
+  await userEvent.click(await canvas.findByRole("button", { name: /add/i }));
 }
 
 export const TooShortName = {
@@ -57,7 +53,7 @@ export const Valid = {
     (args.onLocationChanged as jest.Mock).mockReset();
     await waitFor(() => expect(args.onLocationChanged).toHaveBeenCalled());
 
-    expect(args.onMutate).toHaveBeenCalledWith(
+    expect(args.onDbMutate).toHaveBeenCalledWith(
       expect.objectContaining({ model: "Joke", action: "create", data: expect.objectContaining({ name, content }) })
     );
   },
@@ -65,49 +61,65 @@ export const Valid = {
 
 export const NotLoggedIn = {
   args: { loggedInUser: "none" },
+} satisfies Story;
+
+export const LoginToCreateJoke = {
+  ...NotLoggedIn,
   play: async (context) => {
-    const { args } = context;
+    const canvas = within(context.canvasElement);
+    const text = await canvas.findByText(/you must be logged in to create a joke./i);
+    const link = await within(text.parentElement!).findByRole("link", { name: /login/i });
+    await userEvent.click(link);
 
-    const name = "Frisbee";
-    const content = "I was wondering why the frisbee was getting bigger, then it hit me.";
+    await Login.play(context);
+    await Valid.play(context);
+  },
+} satisfies Story;
 
-    await postJoke(context, name, content);
+export const PostAfterSessionExpiration = {
+  args: {
+    loggedInUser: "kody",
+  },
+  play: async (context) => {
+    const { args, canvasElement } = context;
+    const canvas = within(canvasElement);
 
+    await canvas.findByRole("form");
+
+    // Let's go forward 2 months in time!
+    await getTestContext(context).clock.sleep(1000 * 60 * 60 * 24 * 60);
+
+    await postJoke(context, "Frisbee", "Some joke ... ");
+
+    // Should go to login
     await waitFor(() => {
       expect(args.onLocationChanged).toHaveBeenCalledWith(expect.objectContaining({ pathname: "/login" }));
     });
 
-    expect(args.onMutate).not.toHaveBeenCalledWith(expect.objectContaining({ model: "Joke", action: "create" }));
+    // Should not post joke
+    expect(args.onDbMutate).not.toHaveBeenCalledWith(expect.objectContaining({ table: "joke", action: "create" }));
   },
 } satisfies Story;
 
-// export const PostAfterSessionExpiration = {
-//   args: {
-//     url: "/jokes",
-//     loggedInUser: "kody",
-//   },
-//   decorators: [
-//     (Story) => {
-//       return <Story args={{}}></Story>;
-//     },
-//   ],
-//   play: async (context) => {
-//     const { args, canvasElement } = context;
-//     const canvas = within(canvasElement);
-//
-//     await userEvent.click(await canvas.findByRole("link", { name: /add your own/i }));
-//
-//     // TODO let's find a solid way to inject the test context in the story context
-//     await args.clock.sleep(1000 * 60 * 60 * 24 * 60);
-//
-//     await postJoke(context, "Frisbee", "I was wondering why the frisbee was getting bigger, then it hit me.");
-//
-//     // Should go to login
-//     await waitFor(() => {
-//       expect(args.onLocationChanged).toHaveBeenCalledWith(expect.objectContaining({ pathname: "/login" }));
-//     });
-//
-//     // Should not post joke
-//     expect(args.onMutate).not.toHaveBeenCalledWith(expect.objectContaining({ table: "joke", action: "create" }));
-//   },
-// } satisfies Story;
+export const _400 = {
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    (await canvas.findByLabelText("Content:")).remove();
+    await userEvent.click(await canvas.findByRole("button", { name: /add/i }));
+  },
+} satisfies Story;
+
+export const _500 = {
+  play: async (context) => {
+    const { args } = context;
+    const canvas = within(context.canvasElement);
+    await canvas.findByRole("form");
+
+    // @ts-expect-error Force 500
+    getTestContext(context).db.joke.create = null;
+
+    await postJoke(context, "Frisbee", "Some joke ... ");
+
+    await waitFor(() => expect(args.onResponse).toHaveBeenCalledWith(expect.objectContaining({ status: 500 })));
+  },
+} satisfies Story;
